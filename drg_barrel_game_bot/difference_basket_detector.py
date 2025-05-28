@@ -25,9 +25,7 @@ class DifferenceBasketDetector():
         return grayscale_image
 
     def _proccess_image(self, image: np.ndarray) -> np.ndarray:
-        image = image[round(image.shape[0]*self.basket_axis_y_gap[0]):round(image.shape[0]*self.basket_axis_y_gap[1])]
         grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        
 
         if self.last_grayscale_image is not None:
             difference_image = cv2.bitwise_xor(grayscale_image, self.last_grayscale_image)

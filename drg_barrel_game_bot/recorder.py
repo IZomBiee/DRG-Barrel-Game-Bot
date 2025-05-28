@@ -6,7 +6,7 @@ from screeninfo import get_monitors
 class Recorder():
     '''Help get frames with mss with fixed fps'''
     def __init__(self, region: tuple[int, int, int, int] | None = None,
-                 target_fps: int = 30):  
+                 target_fps: int = 60):  
         monitors = get_monitors()[0]
         self.region = {
             'top': region[0] if region else 0,

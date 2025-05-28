@@ -1,6 +1,7 @@
 import cv2
-from drg_barrel_game_bot import DifferenceBasketDetector, HSVBasketDetector
+from drg_barrel_game_bot import DifferenceBasketDetector, HSVBasketDetector, TOMLSettingsLoader as TSL
 
+TSL()
 
 video_path = r"C:\Users\patri\Videos\2025-05-28 18-08-11.mkv"
 video_fps = 60

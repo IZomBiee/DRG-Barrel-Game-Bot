@@ -1,13 +1,19 @@
 import cv2
 import numpy as np
 
+from .settings_loader import TOMLSettingsLoader as TSL
+
 class HSVBasketDetector():
     def __init__(self):
         self.left_border_x = None
         self.right_border_x = None
 
-        self.basket_axis_y_gap = (0.45, 0.55)
-        self.min_contour_area = 300
+        self.basket_axis_y_gap: list[float] = TSL()['basket']['axis_line_gap'] # type: ignore
+
+        self.min_contour_area = TSL()['basket']['min_area'] # type: ignore
+
+        self.hsv_min = np.array(TSL()['basket']['hsv_min']) # type: ignore
+        self.hsv_max = np.array(TSL()['basket']['hsv_max']) # type: ignore
 
     def _update_borders(self, x:int) -> None:
         if self.left_border_x is None or self.left_border_x > x:
@@ -16,14 +22,10 @@ class HSVBasketDetector():
             self.right_border_x = x
 
     def _proccess_image(self, image: np.ndarray) -> np.ndarray:
-        image = image[round(image.shape[0]*self.basket_axis_y_gap[0]):round(image.shape[0]*self.basket_axis_y_gap[1])]
-        hsv_min = (5, 42, 244)
-        hsv_max = (29, 156, 255)
-
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        thresholded_image = cv2.inRange(hsv_image, hsv_min, hsv_max) # type: ignore
+        thresholded_image = cv2.inRange(hsv_image, self.hsv_min, self.hsv_max)
         thresholded_image = cv2.GaussianBlur(thresholded_image, [9, 9], 15)
-        ret, thresholded_image = cv2.threshold(thresholded_image, 1, 255, cv2.THRESH_BINARY)
+        thresholded_image = cv2.threshold(thresholded_image, 1, 255, cv2.THRESH_BINARY)[1]
         return thresholded_image
     
     def find_x(self, image: np.ndarray) -> int | None:
