@@ -7,15 +7,15 @@ minimal_time = 0
 maximal_time = 3
 
 [basket]
-min_area = 100
+min_area = 200
 hsv_min = [5, 32, 234]
 hsv_max = [49, 166, 255]
 
 border_setup_time = 4.0
-border_tolirance = 30
+border_tolirance = 100
 axis_line_gap = [0.4, 0.6] 
-position_count = 0.5
-velocity_checking_time = 0.5
+position_count = 0.2
+velocity_checking_time = 0.3
 
 [basced.blur]
 ksize = [15, 15]
@@ -23,8 +23,8 @@ deltax = 30
 threshold = 15
 
 [display]
-resolution = [1920, 1080]
-debug_view = true
+resolution = [3840, 2160]
+debug_view = false
 
 [program]
 start_key = 'ctrl+p'

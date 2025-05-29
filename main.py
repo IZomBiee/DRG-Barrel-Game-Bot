@@ -63,7 +63,7 @@ while True:
             if time.perf_counter()-last_kick_time < TSL()['barrel']['respawn_time']:
                 print("Can't shoot, barrel is in flaying")
             elif count is not None and cycle_time is not None:
-                sleep_time = (count+cycle_time//2)-TSL()['barrel']['fly_time']
+                sleep_time = count*1.5-TSL()['barrel']['fly_time']
                 if sleep_time > TSL()['kick']['maximal_time']:
                     print("Too big kick time!")
                 elif sleep_time < TSL()['kick']['minimal_time']:
@@ -71,6 +71,7 @@ while True:
                 elif sleep_time > 0:
                     print(f"Can fire on {sleep_time} seconds!")
                     time.sleep(sleep_time)
+
                     keyboard.press_and_release('e')
                     last_kick_time = time.perf_counter()
 

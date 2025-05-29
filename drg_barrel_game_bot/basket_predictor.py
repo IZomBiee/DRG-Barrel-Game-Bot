@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 
 from .hsv_basket_detector import HSVBasketDetector
-from .settings_loader import TOMLSettingsLoader as TSL
 
 class BasketPredictor:
     '''Class for predicting basket next position and time to necessery position'''
@@ -11,74 +10,77 @@ class BasketPredictor:
         self.detector = detector
 
         self.time_of_positions = time_of_positions
-        self.positions: list[int] = []
+        self.x_velocities: list[float] = []
         self.times: list[float] = []
-        self.velocity_x = 0 
+        self.avarage_velocity_x = 0 
+        self.last_x_position = None
 
         self.border_tolirance = border_tolirance
 
     def _check_positions_count(self) -> None:
         if sum(self.times) > self.time_of_positions:
-            self.positions.pop(0)
             self.times.pop(0)
+            self.x_velocities.pop(0)
+
+    def _check_directin_chane(self) -> None:
+        if len(self.x_velocities) >= 2:
+            difference = abs(self.x_velocities[-2]-self.x_velocities[-1])
+            if difference > self.avarage_velocity_x*0.5:
+                print("Change direction")
 
     def update(self, image:np.ndarray, dt:float) -> None:
         x = self.detector.find_x(image)
-        if x is None: return
-        self.positions.append(x)
-        self.times.append(dt)
-        self._update_velocity_x()
-        self._check_positions_count()
+        if x is not None:
+            if self.last_x_position is not None:
+                self.x_velocities.append((x-self.last_x_position)/dt)
+            self.last_x_position = x
+            self.times.append(dt)
+            self._update_avarage_velocity_x()
+            self._check_positions_count()
+            # self._check_directin_chane()
 
-    def _update_velocity_x(self) -> None:
-        if len(self.positions) > 2:
-            difference_sum = 0
-            for i in range(1, len(self.positions)):
-                difference_sum += (self.positions[i] - self.positions[i-1]) /self.times[i]
-
-            self.velocity_x = difference_sum / (len(self.positions) - 1)
+    def _update_avarage_velocity_x(self) -> None:
+        if len(self.x_velocities) > 0:
+            self.avarage_velocity_x = sum(self.x_velocities)/len(self.x_velocities)
 
     def is_on_left_border(self) -> bool:
-        if len(self.positions) < 1: return False
-        
-        if self.positions[-1] - self.border_tolirance < self.detector.get_left_border():
-            return True
+        if self.last_x_position is not None: 
+            if self.last_x_position - self.border_tolirance < self.detector.get_left_border():
+                return True
         return False
     
     def is_on_right_border(self) -> bool:
-        if len(self.positions) < 1: return False
-        
-        if self.positions[-1] - self.border_tolirance < self.detector.get_right_border():
-            return True
+        if self.last_x_position is not None: 
+            if self.last_x_position - self.border_tolirance < self.detector.get_right_border():
+                return True
         return False
 
     def cycle_time(self) -> float | None:
-        if len(self.positions) < 0 or self.velocity_x is None or self.velocity_x == 0: return None
+        if self.last_x_position is not None:
+            if self.avarage_velocity_x != 0:
+                right_border = self.detector.get_right_border()
+                left_border = self.detector.get_left_border()
 
-        right_border = self.detector.get_right_border()
-        left_border = self.detector.get_left_border()
-        if right_border is None or left_border is None: return None
-
-        gap =  right_border - left_border
-        if gap != 0:
-            return gap/self.velocity_x
+                gap =  right_border - left_border
+                if gap != 0:
+                    return gap/self.avarage_velocity_x  
 
     def time_to_right_border(self) -> float | None:
-        if len(self.positions) < 0 or self.velocity_x is None or self.velocity_x == 0: return None
+        if self.last_x_position is not None:
+            if self.avarage_velocity_x != 0:
+                right_border = self.detector.get_right_border()
+                left_border = self.detector.get_left_border()
+                if right_border is None or left_border is None: return None
 
-        right_border = self.detector.get_right_border()
-        left_border = self.detector.get_left_border()
-        if right_border is None or left_border is None: return None
-
-        gap =  right_border - self.positions[-1]
-        if gap != 0:
-            return gap/self.velocity_x
+                gap = right_border - self.last_x_position
+                if gap != 0:
+                    return gap/self.avarage_velocity_x
 
     def _predict_next_position(self, x:int) -> int:
         left_border, right_border = self.detector.get_left_border(), self.detector.get_right_border()
-        if self.velocity_x is None: return x
+        if self.avarage_velocity_x == 0: return x
         elif left_border is None or right_border is None:
-            return round(x+self.velocity_x)
+            return round(x+self.avarage_velocity_x*0.1)
         
             
         span = right_border - left_border
@@ -86,7 +88,7 @@ class BasketPredictor:
             return x
         
         current_relative = x - left_border
-        new_relative = current_relative + self.velocity_x
+        new_relative = current_relative + self.avarage_velocity_x*0.1
         
         remainder = new_relative % (2 * span)
         if remainder > span:
@@ -97,14 +99,13 @@ class BasketPredictor:
         return round(left_border + final_relative)
 
     def draw_basket(self, image:np.ndarray) -> np.ndarray:
-        if len(self.positions) > 0:
-            x = self.positions[-1]
-            image = cv2.line(image, (x, 0), (x, image.shape[0]), (255, 0, 255), 5)
+        if self.last_x_position is not None:
+            image = cv2.line(image, (self.last_x_position, 0), (self.last_x_position, image.shape[0]), (255, 0, 255), 5)
         return image
     
     def draw_traectory(self, image: np.ndarray) -> np.ndarray:
-        if self.velocity_x is not None and len(self.positions) > 0:
-            next_pos_x = int(self._predict_next_position(self.positions[-1]))
+        if self.last_x_position is not None:
+            next_pos_x = int(self._predict_next_position(self.last_x_position))
             image = cv2.line(image, (next_pos_x, 0),
-                            (next_pos_x, image.shape[0]), (16,  65, 64), 5)
+                            (next_pos_x, image.shape[0]), (16, 65, 64), 5)
         return image
