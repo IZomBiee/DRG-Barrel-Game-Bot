@@ -12,7 +12,7 @@ hsv_min = [5, 32, 234]
 hsv_max = [49, 166, 255]
 
 border_setup_time = 4.0
-left_border_tolirance = 30
+border_tolirance = 30
 axis_line_gap = [0.4, 0.6] 
 position_count = 0.5
 velocity_checking_time = 0.5

@@ -3,7 +3,7 @@ import keyboard
 import numpy as np
 import time
 
-from drg_barrel_game_bot import BasketPredictor, Recorder, TOMLSettingsLoader as TSL
+from drg_barrel_game_bot import BasketPredictor, HSVBasketDetector, Recorder, TOMLSettingsLoader as TSL
 
 print(r"""
 ________ __________  ________  __________                             .__   
@@ -38,7 +38,8 @@ show_speed = False
 
 last_kick_time = time.perf_counter()
 
-basket_predictor = BasketPredictor()
+basket_detector = HSVBasketDetector(TSL()['basket']['min_area'], TSL()['basket']['hsv_min'], TSL()['basket']['hsv_max'], [15, 15], 30, 1)
+basket_predictor = BasketPredictor(basket_detector, TSL()['basket']['position_count'], TSL()['basket']['border_tolirance'])
 
 update_time = time.perf_counter()
 while True:
@@ -51,7 +52,7 @@ while True:
     if time.perf_counter()-start_time < TSL()['basket']['border_setup_time']:
         pass
     else:
-        if basket_predictor.on_left_border():
+        if basket_predictor.is_on_left_border():
             print("On left Border!")
             time_on_border = time.perf_counter()
             show_speed = True

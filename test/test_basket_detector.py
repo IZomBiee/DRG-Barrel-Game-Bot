@@ -6,7 +6,7 @@ video_fps = 60
 
 video_reader = cv2.VideoCapture(video_path)
 
-basket_detector = HSVBasketDetector()
+basket_detector = HSVBasketDetector(200, TSL()['basket']['hsv_min'], TSL()['basket']['hsv_max'], [15, 15], 30, 1)
 while video_reader.isOpened():
     ret, frame = video_reader.read()
     x, y, w, h = TSL()["display"]["resolution"]

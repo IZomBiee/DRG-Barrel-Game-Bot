@@ -5,18 +5,20 @@ from .hsv_basket_detector import HSVBasketDetector
 from .settings_loader import TOMLSettingsLoader as TSL
 
 class BasketPredictor:
-    def __init__(self) -> None:
-        self.detector = HSVBasketDetector()
+    '''Class for predicting basket next position and time to necessery position'''
+    def __init__(self, detector: HSVBasketDetector,
+                 time_of_positions: float, border_tolirance: int) -> None:
+        self.detector = detector
 
-        self.position_count = TSL()['basket']['position_count'] # type: ignore
-        self.positions = []
-        self.times = []
-        self.velocity_x = None 
+        self.time_of_positions = time_of_positions
+        self.positions: list[int] = []
+        self.times: list[float] = []
+        self.velocity_x = 0 
 
-        self.left_border_tolirance = TSL()['basket']['left_border_tolirance'] # type: ignore
+        self.border_tolirance = border_tolirance
 
     def _check_positions_count(self) -> None:
-        if sum(self.times) > self.position_count:
+        if sum(self.times) > self.time_of_positions:
             self.positions.pop(0)
             self.times.pop(0)
 
@@ -29,30 +31,27 @@ class BasketPredictor:
         self._check_positions_count()
 
     def _update_velocity_x(self) -> None:
-        if len(self.positions) < 2:
-            return None
-            
-        difference_sum = 0
-        for i in range(1, len(self.positions)):
-            difference_sum += (self.positions[i] - self.positions[i-1]) /self.times[i]
+        if len(self.positions) > 2:
+            difference_sum = 0
+            for i in range(1, len(self.positions)):
+                difference_sum += (self.positions[i] - self.positions[i-1]) /self.times[i]
 
-        self.velocity_x = difference_sum / (len(self.positions) - 1)
+            self.velocity_x = difference_sum / (len(self.positions) - 1)
 
-    def on_left_border(self) -> bool:
+    def is_on_left_border(self) -> bool:
         if len(self.positions) < 1: return False
         
-        if self.positions[-1] - self.left_border_tolirance < self.detector.get_left_border():
+        if self.positions[-1] - self.border_tolirance < self.detector.get_left_border():
             return True
         return False
     
-    def on_right_border(self) -> bool:
+    def is_on_right_border(self) -> bool:
         if len(self.positions) < 1: return False
         
-        if self.positions[-1] - self.left_border_tolirance < self.detector.get_right_border():
+        if self.positions[-1] - self.border_tolirance < self.detector.get_right_border():
             return True
         return False
-    
-    
+
     def cycle_time(self) -> float | None:
         if len(self.positions) < 0 or self.velocity_x is None or self.velocity_x == 0: return None
 
