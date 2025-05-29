@@ -3,3 +3,4 @@ from .basket_predictor import BasketPredictor
 from .recorder import Recorder
 from .settings_loader import TOMLSettingsLoader
 from .utils import *
+from .kick_manager import KickManager

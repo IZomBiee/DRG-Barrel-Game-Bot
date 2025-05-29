@@ -3,8 +3,9 @@ fly_time = 1
 respawn_time = 2
 
 [kick]
-minimal_time = 0
-maximal_time = 3
+kicking_detection_sensitivity = 0.8
+barrel_boucing_time = 0.2
+minimal_kick_delay = 1
 
 [basket]
 min_area = 200
@@ -14,8 +15,8 @@ hsv_max = [49, 166, 255]
 border_setup_time = 4.0
 border_tolirance = 100
 axis_line_gap = [0.4, 0.6] 
-position_count = 0.2
-velocity_checking_time = 0.3
+position_count = 0.1
+velocity_checking_time = 0.2
 
 [basced.blur]
 ksize = [15, 15]
@@ -23,8 +24,9 @@ deltax = 30
 threshold = 15
 
 [display]
-resolution = [3840, 2160]
-debug_view = false
+# resolution = [3840,2160]
+resolution = [1920,1080]
+debug_view = true
 
 [program]
 start_key = 'ctrl+p'

@@ -15,9 +15,7 @@ basket_detector = HSVBasketDetector(500, TSL()['basket']['hsv_min'], TSL()['bask
 basket_predictor = BasketPredictor(basket_detector, 0.2, 30)
 while video_reader.isOpened():
     ret, frame= video_reader.read()
-    x, y, w, h = TSL()["display"]["resolution"]
-
-    frame = frame[y:y+h, 0: w]
+    frame = frame[400:700]
     if ret:
         basket_predictor.update(frame, 1/video_fps)
         frame = basket_detector._proccess_image(frame)

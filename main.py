@@ -3,7 +3,8 @@ import keyboard
 import numpy as np
 import time
 
-from drg_barrel_game_bot import BasketPredictor, HSVBasketDetector, Recorder, TOMLSettingsLoader as TSL
+from drg_barrel_game_bot import BasketPredictor, HSVBasketDetector, \
+Recorder, TOMLSettingsLoader as TSL, KickManager
 
 print(r"""
 ________ __________  ________  __________                             .__   
@@ -23,7 +24,7 @@ print(f"Loaded this settings:\n{TSL()}")
 
 print(f"\nPRESS {TSL()['program']['start_key'].upper()} WHEN YOU ON THE RIGHT SPOT")
 
-cam = Recorder(region=TSL()['display']['resolution'])
+cam = Recorder(region=TSL()['display']['logic_resolution'])
 
 while not keyboard.is_pressed(TSL()['program']['start_key']):
     if TSL()['display']['debug_view']:
@@ -31,15 +32,13 @@ while not keyboard.is_pressed(TSL()['program']['start_key']):
         cv2.waitKey(1)
     time.sleep(0.01)
 
-print("Grabing border information...")
-start_time = time.perf_counter()
-time_on_border = time.perf_counter()
-show_speed = False
-
-last_kick_time = time.perf_counter()
-
-basket_detector = HSVBasketDetector(TSL()['basket']['min_area'], TSL()['basket']['hsv_min'], TSL()['basket']['hsv_max'], [15, 15], 30, 1)
-basket_predictor = BasketPredictor(basket_detector, TSL()['basket']['position_count'], TSL()['basket']['border_tolirance'])
+basket_detector = HSVBasketDetector(TSL()['basket']['min_area'], TSL()['basket']['hsv_min'],
+                                    TSL()['basket']['hsv_max'], [15, 15], 30, 1)
+basket_predictor = BasketPredictor(basket_detector, TSL()['basket']['position_count'],
+                                   TSL()['basket']['border_tolirance'])
+kick_manager = KickManager(r"assets/kick_label_3840x2160.png",TSL()['display']['resolution'],
+                           TSL()['kick']['kicking_detection_sensitivity'], TSL()['kick']['barrel_boucing_time'],
+                           TSL()['kick']['minimal_kick_delay'])
 
 update_time = time.perf_counter()
 while True:
@@ -49,40 +48,20 @@ while True:
     frame = cam.get_screenshot()
     basket_predictor.update(frame, dt)
 
-    if time.perf_counter()-start_time < TSL()['basket']['border_setup_time']:
-        pass
-    else:
-        if basket_predictor.is_on_left_border():
-            print("On left Border!")
-            time_on_border = time.perf_counter()
-            show_speed = True
-
-        if time.perf_counter()-time_on_border > TSL()['basket']['velocity_checking_time'] and show_speed:
-            count = basket_predictor.time_to_right_border()
-            cycle_time = basket_predictor.cycle_time()
-            if time.perf_counter()-last_kick_time < TSL()['barrel']['respawn_time']:
-                print("Can't shoot, barrel is in flaying")
-            elif count is not None and cycle_time is not None:
-                sleep_time = count*1.5-TSL()['barrel']['fly_time']
-                if sleep_time > TSL()['kick']['maximal_time']:
-                    print("Too big kick time!")
-                elif sleep_time < TSL()['kick']['minimal_time']:
-                    print("Too small kick time!")
-                elif sleep_time > 0:
-                    print(f"Can fire on {sleep_time} seconds!")
-                    time.sleep(sleep_time)
-
-                    keyboard.press_and_release('e')
-                    last_kick_time = time.perf_counter()
-
-            show_speed = False
+    if basket_predictor.is_on_left_border():
+        print("Basket is on left border")
+        if basket_predictor.avarage_velocity_x > 150:
+            print("Velocity is positive")
+            if kick_manager.can_kick(frame):
+                time_to_kick = basket_predictor.time_to_right_border()-TSL()['barrel']['fly_time']
+                print(f"Kick on {round(time_to_kick, 2)} s")
 
     if TSL()['display']['debug_view']:
         frame = basket_predictor.draw_basket(frame)
         frame = basket_predictor.draw_traectory(frame)
         frame = basket_predictor.detector.draw_borders(frame)
+
         cv2.imshow("Debug View", frame)
         cv2.imshow("Proccess View", basket_predictor.detector._proccess_image(frame))
         cv2.waitKey(1)
 
-    # print(f"FPS: {1/(time.perf_counter()-update_time)}")
