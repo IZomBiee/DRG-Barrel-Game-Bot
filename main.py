@@ -21,15 +21,15 @@ ________ __________  ________  __________                             .__
 """)
 print(f"Loaded this settings:\n{TSL()}")
 
-print("\nPRESS CTRL+P WHEN YOU ON THE RIGHT SPOT")
+print(f"\nPRESS {TSL()['program']['start_key'].upper()} WHEN YOU ON THE RIGHT SPOT")
 
-region = (round(TSL()['display']['resolution'][0]*(TSL()['basket']['axis_line_gap'][0]-(TSL()['basket']['axis_line_gap'][1]-TSL()['basket']['axis_line_gap'][0]))),
-          0,
-          TSL()['display']['resolution'][0],
-          round(TSL()['display']['resolution'][0]*(TSL()['basket']['axis_line_gap'][1]-TSL()['basket']['axis_line_gap'][0])))
-cam = Recorder(region=region)
+cam = Recorder(region=TSL()['display']['resolution'])
 
-keyboard.wait("ctrl+p")
+while not keyboard.is_pressed(TSL()['program']['start_key']):
+    if TSL()['display']['debug_view']:
+        cv2.imshow("Debug View", cam.get_screenshot())
+        cv2.waitKey(1)
+    time.sleep(0.01)
 
 print("Grabing border information...")
 start_time = time.perf_counter()
@@ -44,35 +44,36 @@ update_time = time.perf_counter()
 while True:
     dt = time.perf_counter()-update_time
     update_time = time.perf_counter()
-    
+
     frame = cam.get_screenshot()
-    basket_predictor.update(frame)
+    basket_predictor.update(frame, dt)
 
     if time.perf_counter()-start_time < TSL()['basket']['border_setup_time']:
-        continue
+        pass
+    else:
+        if basket_predictor.on_left_border():
+            print("On left Border!")
+            time_on_border = time.perf_counter()
+            show_speed = True
 
-    if basket_predictor.on_left_border():
-        print("On left Border!")
-        time_on_border = time.perf_counter()
-        show_speed = True
+        if time.perf_counter()-time_on_border > TSL()['basket']['velocity_checking_time'] and show_speed:
+            count = basket_predictor.time_to_right_border()
+            cycle_time = basket_predictor.cycle_time()
+            if time.perf_counter()-last_kick_time < TSL()['barrel']['respawn_time']:
+                print("Can't shoot, barrel is in flaying")
+            elif count is not None and cycle_time is not None:
+                sleep_time = (count+cycle_time//2)-TSL()['barrel']['fly_time']
+                if sleep_time > TSL()['kick']['maximal_time']:
+                    print("Too big kick time!")
+                elif sleep_time < TSL()['kick']['minimal_time']:
+                    print("Too small kick time!")
+                elif sleep_time > 0:
+                    print(f"Can fire on {sleep_time} seconds!")
+                    time.sleep(sleep_time)
+                    keyboard.press_and_release('e')
+                    last_kick_time = time.perf_counter()
 
-    if time.perf_counter()-time_on_border > TSL()['basket']['velocity_checking_time'] and show_speed:
-        count = basket_predictor.frames_to_center()
-        if time.perf_counter()-last_kick_time < TSL()['barrel']['respawn_time']:
-            print("Can't shoot, barrel is in flaying")
-        elif count is not None:
-            sleep_time = count*(1/cam.target_fps)-2
-            if sleep_time > TSL()['kick']['maximal_time']:
-                print("Too big kick time!")
-            elif sleep_time < TSL()['kick']['minimal_time']:
-                print("Too small kick time!")
-            elif sleep_time > 0:
-                print(f"Can fire on {sleep_time} seconds!")
-                time.sleep(sleep_time)
-                keyboard.press_and_release('e')
-                last_kick_time = time.perf_counter()
-
-        show_speed = False
+            show_speed = False
 
     if TSL()['display']['debug_view']:
         frame = basket_predictor.draw_basket(frame)

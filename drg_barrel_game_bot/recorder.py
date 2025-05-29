@@ -9,8 +9,8 @@ class Recorder():
                  target_fps: int = 60):  
         monitors = get_monitors()[0]
         self.region = {
-            'top': region[0] if region else 0,
-            'left': region[1] if region else 0,
+            'top': region[1] if region else 0,
+            'left': region[0] if region else 0,
             'width': region[2] if region else monitors.width,
             'height': region[3] if region else monitors.height,
         }

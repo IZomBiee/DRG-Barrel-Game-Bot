@@ -1,21 +1,21 @@
 [barrel]
-fly_time = 1.5
-respawn_time = 2.0
+fly_time = 1
+respawn_time = 2
 
 [kick]
-minimal_time = 0.2
+minimal_time = 0
 maximal_time = 3
 
 [basket]
-min_area = 50
-hsv_min = [5, 42, 244]
-hsv_max = [29, 156, 255]
+min_area = 100
+hsv_min = [5, 32, 234]
+hsv_max = [49, 166, 255]
 
-border_setup_time = 5.0
-left_border_tolirance = 50
+border_setup_time = 4.0
+left_border_tolirance = 30
 axis_line_gap = [0.4, 0.6] 
-position_count = 20
-velocity_checking_time = 0.2
+position_count = 0.5
+velocity_checking_time = 0.5
 
 [basced.blur]
 ksize = [15, 15]
@@ -24,4 +24,7 @@ threshold = 15
 
 [display]
 resolution = [1920, 1080]
-debug_view = false
+debug_view = true
+
+[program]
+start_key = 'ctrl+p'

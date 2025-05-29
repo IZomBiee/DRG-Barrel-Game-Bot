@@ -43,21 +43,23 @@ class HSVBasketDetector():
         return None
     
     def draw_borders(self, image: np.ndarray) -> np.ndarray:
-        if self.left_border_x is not None:
-            image = cv2.line(image, (self.left_border_x, 0), (self.left_border_x, image.shape[0]), (0, 255, 0), 5)
-        if self.right_border_x is not None:
-            image = cv2.line(image, (self.right_border_x, 0), (self.right_border_x, image.shape[0]), (0, 255, 0), 5)
+        left_border, right_border = self.get_left_border(), self.get_right_border()
+        if left_border is not None:
+            image = cv2.line(image, (left_border, 0), (left_border, image.shape[0]), (0, 255, 0), 5)
+        if right_border is not None:
+            image = cv2.line(image, (right_border, 0), (right_border, image.shape[0]), (0, 255, 0), 5)
         return image
 
     def get_left_border(self) -> int | None:
-        return self.left_border_x
+        if self.left_border_x is None: return None
+        else:
+            return self.left_border_x
 
     def get_right_border(self) -> int | None:
-        return self.right_border_x
+        if self.right_border_x is None: return None
+        else:
+            return self.right_border_x
 
-
-
-    
     # def get_seconds_to_position(self, speed_per_s, current_position, left_border, right_border, target_position, tolirance):
     #     left_for_target_position = 1
     #     while True:

@@ -7,6 +7,11 @@ class TOMLSettingsLoader:
     def __init__(self) -> None:
         self.path = "settings.toml"
         self._read()
+        new_resolution = (0,
+          round(self['display']['resolution'][0]*(self['basket']['axis_line_gap'][0]-(self['basket']['axis_line_gap'][1]-self['basket']['axis_line_gap'][0]))),
+          self['display']['resolution'][0],
+          round(self['display']['resolution'][0]*(self['basket']['axis_line_gap'][1]-self['basket']['axis_line_gap'][0])))
+        self['display']['resolution'] = new_resolution
 
     def _read(self):
         with open(self.path, 'r') as f:

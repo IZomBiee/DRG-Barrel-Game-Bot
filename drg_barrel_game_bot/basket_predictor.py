@@ -14,10 +14,11 @@ class BasketPredictor:
         self.velocity_x = None 
 
         self.left_border_tolirance = TSL()['basket']['left_border_tolirance'] # type: ignore
-    
+
     def _check_positions_count(self) -> None:
-        if len(self.positions) > self.position_count:
+        if sum(self.times) > self.position_count:
             self.positions.pop(0)
+            self.times.pop(0)
 
     def update(self, image:np.ndarray, dt:float) -> None:
         x = self.detector.find_x(image)
@@ -33,7 +34,7 @@ class BasketPredictor:
             
         difference_sum = 0
         for i in range(1, len(self.positions)):
-            difference_sum += self.positions[i] - self.positions[i-1] 
+            difference_sum += (self.positions[i] - self.positions[i-1]) /self.times[i]
 
         self.velocity_x = difference_sum / (len(self.positions) - 1)
 
@@ -44,20 +45,35 @@ class BasketPredictor:
             return True
         return False
     
-    def _frame_to_cycle(self) -> float | None:
-        if len(self.positions) < 0 or self.velocity_x is None: return None
+    def on_right_border(self) -> bool:
+        if len(self.positions) < 1: return False
+        
+        if self.positions[-1] - self.left_border_tolirance < self.detector.get_right_border():
+            return True
+        return False
+    
+    
+    def cycle_time(self) -> float | None:
+        if len(self.positions) < 0 or self.velocity_x is None or self.velocity_x == 0: return None
 
         right_border = self.detector.get_right_border()
         left_border = self.detector.get_left_border()
         if right_border is None or left_border is None: return None
 
-        gap = right_border - left_border
-        return gap/self.velocity_x
+        gap =  right_border - left_border
+        if gap != 0:
+            return gap/self.velocity_x
 
-    def frames_to_center(self) -> float | None:
-        cycle_frame_count = self._frame_to_cycle()
-        if cycle_frame_count is None: return None
-        return cycle_frame_count*1.5
+    def time_to_right_border(self) -> float | None:
+        if len(self.positions) < 0 or self.velocity_x is None or self.velocity_x == 0: return None
+
+        right_border = self.detector.get_right_border()
+        left_border = self.detector.get_left_border()
+        if right_border is None or left_border is None: return None
+
+        gap =  right_border - self.positions[-1]
+        if gap != 0:
+            return gap/self.velocity_x
 
     def _predict_next_position(self, x:int) -> int:
         left_border, right_border = self.detector.get_left_border(), self.detector.get_right_border()
@@ -88,7 +104,7 @@ class BasketPredictor:
         return image
     
     def draw_traectory(self, image: np.ndarray) -> np.ndarray:
-        if self.velocity_x is not None:
+        if self.velocity_x is not None and len(self.positions) > 0:
             next_pos_x = int(self._predict_next_position(self.positions[-1]))
             image = cv2.line(image, (next_pos_x, 0),
                             (next_pos_x, image.shape[0]), (16,  65, 64), 5)
