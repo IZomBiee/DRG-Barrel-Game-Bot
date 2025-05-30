@@ -42,6 +42,7 @@ kick_manager = KickManager(r"assets/kick_label_3840x2160.png",TSL()['display']['
 
 state_manager = StateManager()
 state_manager.state = "Setup Borders"
+kick_waiting_time = 0
 
 update_time = time.perf_counter()
 while True:
@@ -50,9 +51,10 @@ while True:
 
     frame = cam.get_screenshot()
     basket_predictor.update(frame, dt)
-
     match state_manager.state:
         case 'Setup Borders':
+            if basket_predictor.last_x_position is not None:
+                basket_detector.update_borders(basket_predictor.last_x_position)
             if state_manager.state_duration() > TSL()['basket']['border_setup_time']:
                 state_manager.state = 'Waiting For Left Border'
         case 'Waiting For Left Border':
@@ -62,25 +64,25 @@ while True:
             if not basket_predictor.is_on_left_border():
                 state_manager.state = 'Calculating Kick Time'
             elif state_manager.state_duration() > 1:
-                print("State is too long!")
+                print("On Left Border too long!")
                 state_manager.state = 'Waiting For Left Border'
         case 'Calculating Kick Time':
             if state_manager.state_duration() > TSL()['basket']['velocity_checking_time']:
                 kick_waiting_time = basket_predictor.time_to_right_border()
-                if kick_waiting_time is not None:
-                    kick_waiting_time += basket_predictor.cycle_time()/2
-                    kick_waiting_time -= TSL()['barrel']['fly_time']
-                    if kick_waiting_time > 0:
-                        print(f"Kicking afret {round(kick_waiting_time, 2)} s")
-                        state_manager.state = 'Waiting Time For Kick'
-                    else:
-                        print("Lack of Kick Time")
-                        state_manager.state = 'Waiting For Left Border'
-                else:
-                    print("Can't Get Kick Time")
+                kick_waiting_time += basket_predictor.cycle_time()/2
+                kick_waiting_time -= TSL()['barrel']['fly_time']
+                if kick_waiting_time > 5:
+                    print("The Kick Time is too High!")
                     state_manager.state = 'Waiting For Left Border'
+                elif kick_waiting_time > 0:
+                    print(f"Kicking after {round(kick_waiting_time, 2)} s")
+                    state_manager.state = 'Waiting Time For Kick'
+                else:
+                    print("Lack of Kick Time!")
+                    state_manager.state = 'Waiting For Left Border'
+
         case 'Waiting Time For Kick':
-            if state_manager.state_duration() > kick_waiting_time: # type: ignore
+            if state_manager.state_duration() > kick_waiting_time:
                 if kick_manager.can_kick(frame):
                     kick_manager.kick()
                     print("Kick!")

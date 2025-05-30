@@ -22,12 +22,6 @@ class BasketPredictor:
             self.times.pop(0)
             self.x_velocities.pop(0)
 
-    def _check_directin_chane(self) -> None:
-        if len(self.x_velocities) >= 2:
-            difference = abs(self.x_velocities[-2]-self.x_velocities[-1])
-            if difference > self.avarage_velocity_x*0.5:
-                print("Change direction")
-
     def update(self, image:np.ndarray, dt:float) -> None:
         x = self.detector.find_x(image)
         if x is not None:
@@ -37,7 +31,6 @@ class BasketPredictor:
             self.times.append(dt)
             self._update_avarage_velocity_x()
             self._check_positions_count()
-            # self._check_directin_chane()
 
     def _update_avarage_velocity_x(self) -> None:
         if len(self.x_velocities) > 0:
@@ -55,7 +48,7 @@ class BasketPredictor:
                 return True
         return False
 
-    def cycle_time(self) -> float | None:
+    def cycle_time(self) -> float:
         if self.last_x_position is not None:
             if self.avarage_velocity_x != 0:
                 right_border = self.detector.get_right_border()
@@ -64,17 +57,20 @@ class BasketPredictor:
                 gap =  right_border - left_border
                 if gap != 0:
                     return gap/self.avarage_velocity_x  
+        return 0
 
-    def time_to_right_border(self) -> float | None:
+    def time_to_right_border(self) -> float:
         if self.last_x_position is not None:
             if self.avarage_velocity_x != 0:
                 right_border = self.detector.get_right_border()
                 left_border = self.detector.get_left_border()
-                if right_border is None or left_border is None: return None
+                if right_border is None or left_border is None:
+                    return 0
 
                 gap = right_border - self.last_x_position
                 if gap != 0:
                     return gap/self.avarage_velocity_x
+        return 0
 
     def _predict_next_position(self, x:int) -> int:
         left_border, right_border = self.detector.get_left_border(), self.detector.get_right_border()
@@ -82,7 +78,6 @@ class BasketPredictor:
         elif left_border is None or right_border is None:
             return round(x+self.avarage_velocity_x*0.1)
         
-            
         span = right_border - left_border
         if span <= 0:
             return x

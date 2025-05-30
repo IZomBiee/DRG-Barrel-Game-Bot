@@ -15,7 +15,7 @@ class KickManager:
         self.e_button_gap = e_button_detection_gap
 
         self.last_detected_barrel_in_front_time = 0
-        self.detected_barrel_in_front = False
+        self.detected_barrel_in_front = True
         self.barrel_boucing_time = barrel_boucing_time
 
         self.last_kick_time = 0
@@ -26,23 +26,38 @@ class KickManager:
         location_image = cv2.matchTemplate(image, self.e_button_image, cv2.TM_CCOEFF_NORMED)
         min_val, max_val, min_pos, max_pos = cv2.minMaxLoc(location_image)
         if max_val > self.e_button_gap:
-            if self.detected_barrel_in_front:
-                if time.perf_counter()-self.last_detected_barrel_in_front_time>self.barrel_boucing_time:
-                    return True
-            else:
+            if not self.detected_barrel_in_front:
                 self.detected_barrel_in_front = True
                 self.last_detected_barrel_in_front_time = time.perf_counter()
+            return True
         else:
             self.detected_barrel_in_front = False
-
         return False
     
-    def can_kick(self, image: np.ndarray) -> bool:
-        if self.is_barrel_in_front(image):
-            if time.perf_counter()-self.last_kick_time > self.kick_delay:
+    def is_barrel_debounce_time_passed(self) -> bool:
+        if self.detected_barrel_in_front:
+            if time.perf_counter()-self.last_detected_barrel_in_front_time>self.barrel_boucing_time:
                 return True
         return False
     
+    def is_kick_delay_passed(self) -> bool:
+        if time.perf_counter()-self.last_kick_time > self.kick_delay:
+            return True
+        return False
+
+    def can_kick(self, image: np.ndarray) -> bool:
+        if self.is_barrel_in_front(image):
+            if self.is_barrel_debounce_time_passed():
+                if self.is_kick_delay_passed():
+                    return True
+                else:
+                    print("Kick delay is not passed")
+            else:
+                print("Debounce time is not passed!")
+        else:
+            print("Barrel is not in front!")
+        return False
     def kick(self):
         keyboard.press_and_release("e")
+        self.detected_barrel_in_front = False
         self.last_kick_time = time.perf_counter()

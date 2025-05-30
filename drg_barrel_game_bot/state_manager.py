@@ -4,7 +4,7 @@ class StateManager:
     '''Handles program states and logs status changes.'''
     
     def __init__(self) -> None:
-        self._state = ""
+        self._state = "On Startup"
         self._state_start_time = time.perf_counter()
         self._last_displayed_state = self._state
 

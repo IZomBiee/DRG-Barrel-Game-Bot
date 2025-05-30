@@ -17,7 +17,7 @@ class HSVBasketDetector():
         self.blur_sigma_x = blur_sigma_x
         self.blur_threshold = blur_threshold
 
-    def _update_borders(self, x:int) -> None:
+    def update_borders(self, x:int) -> None:
         if self.left_border_x is None or self.left_border_x > x:
             self.left_border_x = x
         if self.right_border_x is None or self.right_border_x < x:
@@ -39,7 +39,6 @@ class HSVBasketDetector():
             if cv2.contourArea(biggest_contour) > self.min_contour_area:
                 x, y, w, h = cv2.boundingRect(biggest_contour)
                 position_x = round(x+(w//2))
-                self._update_borders(position_x)
                 return position_x
     
     def draw_borders(self, image: np.ndarray) -> np.ndarray:
