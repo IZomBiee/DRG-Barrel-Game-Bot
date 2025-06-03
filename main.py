@@ -83,7 +83,7 @@ while True:
 
         case 'Waiting Time For Kick':
             if state_manager.state_duration() > kick_waiting_time:
-                if kick_manager.can_kick(frame):
+                if kick_manager.can_kick(frame) or True:
                     kick_manager.kick()
                     print("Kick!")
                 else:

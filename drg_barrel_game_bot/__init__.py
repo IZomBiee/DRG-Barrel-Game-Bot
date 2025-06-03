@@ -5,3 +5,4 @@ from .settings_loader import TOMLSettingsLoader
 from .utils import *
 from .kick_manager import KickManager
 from .state_manager import StateManager
+from .point_basket_detector import PointBasketDetector
