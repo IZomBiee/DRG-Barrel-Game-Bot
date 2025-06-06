@@ -3,29 +3,8 @@ import keyboard
 import numpy as np
 import time
 
-from drg_barrel_game_bot import HSVBasketDetector, \
-Recorder, TOMLSettingsLoader as TSL, KickManager, StateManager, PointBasketDetector \
+from drg_barrel_game_bot import HSVBasketDetector, TOMLSettingsLoader as TSL, KickManager, StateManager, PointBasketDetector \
 , BorderManager
-
-print(r"""
-________ __________  ________  __________                             .__   
-\______ \\______   \/  _____/  \______   \_____ ______________   ____ |  |  
- |    |  \|       _/   \  ___   |    |  _/\__  \\_  __ \_  __ \_/ __ \|  |  
- |    `   \    |   \    \_\  \  |    |   \ / __ \|  | \/|  | \/\  ___/|  |__
-/_______  /____|_  /\______  /  |______  /(____  /__|   |__|    \___  >____/
-        \/       \/        \/          \/      \/                   \/      
-  ________                        __________        __                      
- /  _____/_____    _____   ____   \______   \ _____/  |_                    
-/   \  ___\__  \  /     \_/ __ \   |    |  _//  _ \   __\                   
-\    \_\  \/ __ \|  Y Y  \  ___/   |    |   (  <_> )  |                     
- \______  (____  /__|_|  /\___  >  |______  /\____/|__|                     
-        \/     \/      \/     \/          \/                                
-""")
-print(f"Loaded this settings:\n{TSL()}")
-
-print(f"\nPRESS {TSL()['program']['start_key'].upper()} WHEN YOU ON THE RIGHT SPOT")
-
-cam = Recorder(region=TSL()['display']['logic_resolution'])
 
 point_basket_detector = PointBasketDetector()
 hsv_basket_detector = HSVBasketDetector()
@@ -36,15 +15,19 @@ state_manager = StateManager()
 kick_waiting_time = 0
 on_left_border_time = 0
 
-update_time = time.perf_counter()
+video_path = r"C:\Users\patri\Desktop\just_basket.mkv"
+video_fps = 60
+
+video_reader = cv2.VideoCapture(video_path)
+dt = 1/video_fps
+
+velocity = 0
+state_manager.state = 'Setup Borders'
 while True:
-    dt = time.perf_counter()-update_time
-    update_time = time.perf_counter()
+    ret, frame = video_reader.read()
+    x, y, w, h = TSL()["display"]["logic_resolution"]
+    frame = frame[y:y+h, 0: w]
 
-    if keyboard.is_pressed(TSL()['program']['start_key']) and state_manager.state == "On Startup":
-        state_manager.state = 'Setup Borders'
-
-    frame = cam.get_screenshot()
     match state_manager.state:
         case 'Setup Borders':
             border_manager.update_borders(frame)
@@ -64,6 +47,7 @@ while True:
         case 'Calculating Kick Time':
             if point_basket_detector.is_point2_correct_color(frame):
                 velocity = point_basket_detector.distance/(time.perf_counter()-on_left_border_time)
+                print(f"Velocity is {velocity}")
                 state_manager.state = 'Waiting Time For Kick'
         case 'Waiting Time For Kick':
             if state_manager.state_duration() > kick_waiting_time:
@@ -74,10 +58,12 @@ while True:
                     print("Can't Kick")
                 state_manager.state = 'Waiting For Left Border'
 
-    if TSL()['display']['debug_view']:
-        frame = border_manager.draw_borders(frame)
-        frame = point_basket_detector.draw_points(frame)
+    x = hsv_basket_detector.find_x(frame)
+    if x is not None:
+        frame = cv2.line(frame, (int(x+velocity//2), 0), (int(x+velocity//2), 300), (255, 0, 255), 3)
+    frame = border_manager.draw_borders(frame)
+    frame = point_basket_detector.draw_points(frame)
 
-        cv2.imshow("Debug View", frame)
-        cv2.waitKey(1)
+    cv2.imshow("Debug View", frame)
+    cv2.waitKey(round(dt*1000))
 

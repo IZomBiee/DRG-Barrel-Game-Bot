@@ -2,26 +2,39 @@
 fly_time = 1.2
 respawn_time = 2
 
-[kick]
-kicking_detection_sensitivity = 0.6
-barrel_boucing_time = 0.1
-minimal_kick_delay = 1.5
-
-[basket]
+[detectors.hsv]
 min_area = 500
 hsv_min = [5, 32, 234]
 hsv_max = [49, 166, 255]
 
+ksize = [15, 15]
+sigma_x = 30
+threshold = 15
+
+[detectors.point]
+point1_position = [300, 250]
+point2_position = [800, 250]
+position_margin = 15
+basket_color = [232, 255, 255]
+color_margin = 230
+basket_width = 50
+
+[kick_manager]
+template_path = "assets/e_button_3840x2160.png"
+template_detection_sensevity = 0.8
+barrel_boucing_time = 0.4
+minimal_kick_delay = 1
+
+[kick]
+kicking_detection_sensitivity = 0.6
+minimal_kick_delay = 1.5
+
+[basket]
 border_setup_time = 5.0
 border_tolirance = 25
 axis_line_gap = [0.4, 0.6] 
 position_count = 0.2
 velocity_checking_time = 0.25
-
-[basced.blur]
-ksize = [15, 15]
-deltax = 30
-threshold = 15
 
 [display]
 # resolution = [3840,2160]

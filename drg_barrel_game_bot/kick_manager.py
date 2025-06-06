@@ -3,23 +3,27 @@ import numpy as np
 import time
 import keyboard
 
+from .settings_loader import TOMLSettingsLoader as TSL
+
 class KickManager:
     '''Class for meneging when do kick and can we do kick'''
-    def __init__(self, e_button_image_path: str, resolution:list[int], e_button_detection_gap: float,
-                 barrel_boucing_time: float, minimal_kick_delay: float) -> None:
-        self.e_button_image = cv2.imread(e_button_image_path)
+    def __init__(self) -> None:
+        settings = TSL()['kick_manager']
+        self.e_button_image = cv2.imread(settings['template_path'])
         self.e_button_image = cv2.cvtColor(self.e_button_image, cv2.COLOR_BGR2GRAY)
+        
+        resolution = TSL()['display']['resolution']
         button_new_resolution = [round(self.e_button_image.shape[1]*(resolution[0]/3840)),
                                  round(self.e_button_image.shape[0]*(resolution[1]/2160))]
         self.e_button_image = cv2.resize(self.e_button_image, button_new_resolution)
-        self.e_button_gap = e_button_detection_gap
+        self.e_button_gap = settings['template_detection_sensevity']
 
         self.last_detected_barrel_in_front_time = 0
         self.detected_barrel_in_front = True
-        self.barrel_boucing_time = barrel_boucing_time
+        self.barrel_boucing_time = settings['barrel_boucing_time']
 
         self.last_kick_time = 0
-        self.kick_delay = minimal_kick_delay
+        self.kick_delay = settings['minimal_kick_delay']
 
     def is_barrel_in_front(self, image: np.ndarray) -> bool:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)

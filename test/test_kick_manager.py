@@ -2,7 +2,7 @@ import cv2
 
 from drg_barrel_game_bot import KickManager, TOMLSettingsLoader as TSL
 
-kick_manager = KickManager(r"assets/e_button_3840x2160.png", [1920, 1080], 0.8, 0.4, 1)
+kick_manager = KickManager()
 
 video_path = r"C:\Users\patri\Videos\2025-05-28 18-08-11.mkv"
 video_reader = cv2.VideoCapture(video_path)
