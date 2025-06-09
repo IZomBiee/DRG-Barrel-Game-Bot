@@ -3,9 +3,8 @@ import keyboard
 import numpy as np
 import time
 
-from drg_barrel_game_bot import HSVBasketDetector, \
-Recorder, TOMLSettingsLoader as TSL, KickManager, StateManager, PointBasketDetector \
-, BorderManager
+from drg_barrel_game_bot import AIBasketDetector, \
+Recorder, TSL, KickManager, StateManager, BasketPredictor
 
 print(r"""
 ________ __________  ________  __________                             .__   
@@ -27,11 +26,10 @@ print(f"\nPRESS {TSL()['program']['start_key'].upper()} WHEN YOU ON THE RIGHT SP
 
 cam = Recorder(region=TSL()['display']['logic_resolution'])
 
-point_basket_detector = PointBasketDetector()
-hsv_basket_detector = HSVBasketDetector()
-border_manager = BorderManager(hsv_basket_detector)
+detector = AIBasketDetector()
 kick_manager = KickManager()
 state_manager = StateManager()
+predictor = BasketPredictor(detector)
 
 kick_waiting_time = 0
 on_left_border_time = 0
@@ -45,38 +43,47 @@ while True:
         state_manager.state = 'Setup Borders'
 
     frame = cam.get_screenshot()
+    predictor.update(frame, dt)
     match state_manager.state:
         case 'Setup Borders':
-            border_manager.update_borders(frame)
+            predictor.update_borders()
             if state_manager.state_duration() > TSL()['basket']['border_setup_time']:
                 state_manager.state = 'Waiting For Left Border'
         case 'Waiting For Left Border':
-            if border_manager.is_on_left_border(frame):
+            if predictor.on_left_border():
                 state_manager.state = 'On Left Border'
-                point_basket_detector.point1[0] = border_manager.get_left_border()
         case 'On Left Border':
             on_left_border_time = time.perf_counter()
-            if not border_manager.is_on_left_border(frame):
+            if not predictor.on_left_border():
                 state_manager.state = 'Calculating Kick Time'
             elif state_manager.state_duration() > 0.5:
                 print("On Left Border too long!")
                 state_manager.state = 'Waiting For Left Border'
         case 'Calculating Kick Time':
-            if point_basket_detector.is_point2_correct_color(frame):
-                velocity = point_basket_detector.distance/(time.perf_counter()-on_left_border_time)
-                state_manager.state = 'Waiting Time For Kick'
+            if state_manager.state_duration() > TSL()['basket']['velocity_checking_time']:
+                delay = predictor.time_to_left_border()+predictor.time_for_cycle()/2
+                delay -= TSL()['barrel']['fly_time']
+                print(f"Time to left border:{delay}")
+                if delay > 0:
+                    kick_waiting_time = delay
+                    state_manager.state = 'Waiting Time For Kick'
+                else:
+                    state_manager.state = 'Waiting For Left Border'
         case 'Waiting Time For Kick':
             if state_manager.state_duration() > kick_waiting_time:
-                if kick_manager.can_kick(frame):
-                    kick_manager.kick()
-                    print("Kick!")
-                else:
-                    print("Can't Kick")
+                kick_manager.kick()
+
+                # if kick_manager.can_kick(frame):
+                #     kick_manager.kick()
+                #     print("Kick!")
+                # else:
+                #     print("Can't Kick")
                 state_manager.state = 'Waiting For Left Border'
 
     if TSL()['display']['debug_view']:
-        frame = border_manager.draw_borders(frame)
-        frame = point_basket_detector.draw_points(frame)
+        frame = predictor.draw_basket(frame)
+        frame = predictor.draw_trajectory(frame)
+        frame = predictor.draw_borders(frame)
 
         cv2.imshow("Debug View", frame)
         cv2.waitKey(1)

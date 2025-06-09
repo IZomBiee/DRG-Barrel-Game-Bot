@@ -1,7 +1,7 @@
 import cv2
 import time
 
-from drg_barrel_game_bot import BasketPredictor, AIBasketDetector
+from drg_barrel_game_bot import BasketPredictor, AIBasketDetector, HSVBasketDetector, DifferenceBasketDetector
 
 
 video_path = r"C:\Users\patri\Videos\2025-06-07 11-38-44.mkv"

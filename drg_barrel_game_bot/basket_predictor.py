@@ -14,8 +14,10 @@ class BasketPredictor:
         self.times = []
         self.positions = []
         
-        self.left_border_x = 0
-        self.right_border_x = 10000
+        self.left_border_x = 1000
+        self.right_border_x = 0
+        self.border_tollirance = settings['border_tolirance']
+
         self.avarage_velocity = [0., 0.]
 
     def _check_positions_count(self) -> None:
@@ -38,6 +40,31 @@ class BasketPredictor:
                 self.left_border_x = x
             if self.right_border_x < x:
                 self.right_border_x = x
+    
+    def on_left_border(self) -> bool:
+        if len(self.positions) > 0:
+            if self.left_border_x+self.border_tollirance>self.positions[-1][0]:
+                return True
+        return False
+    
+    def on_right_border(self) -> bool:
+        if len(self.positions) > 0:
+            if self.right_border_x-self.border_tollirance<self.positions[-1][0]:
+                return True
+        return False
+
+    def time_to_left_border(self) -> float:
+        if self.avarage_velocity[0] > 0:
+            gap = self.right_border_x-self.left_border_x
+            left_px = gap-self.positions[-1][0]
+            return left_px/self.avarage_velocity[0]
+        return -1
+    
+    def time_for_cycle(self) -> float:
+        if self.avarage_velocity[0] > 0:
+            gap = self.right_border_x-self.left_border_x
+            return gap/self.avarage_velocity[0]
+        return -1
     
     def _update_avarage_velocity(self) -> None:
         if len(self.positions) >= 2:

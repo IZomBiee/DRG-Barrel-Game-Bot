@@ -21,7 +21,9 @@ class AIBasketDetector(Detector):
         
         self.model = YOLO(model_path)
 
+    
     def find(self, image: np.ndarray) -> list[int] | None:
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = self.model.predict(
             source=image,
             imgsz=self.target_size,
