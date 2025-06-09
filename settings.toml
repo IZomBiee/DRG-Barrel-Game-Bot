@@ -3,13 +3,35 @@ fly_time = 1.2
 respawn_time = 2
 
 [detectors.hsv]
-min_area = 500
+min_area = 200
 hsv_min = [5, 32, 234]
 hsv_max = [49, 166, 255]
 
-ksize = [15, 15]
-sigma_x = 30
-threshold = 15
+ksize = [5, 5]
+sigma_x = 3
+threshold = 30
+
+time_of_positions = 0.2
+
+[detectors.ai]
+model_path = 'd:\Python\Yolov8-Model-Training\runs\detect\train\weights\best.pt'
+classes_path = 'd:\Python\Yolov8-Model-Training\dataset\classes.txt'
+
+score_threshold = 0.3
+iou_threshold = 0.3
+target_size = 500
+
+time_of_positions = 0.2
+
+
+[detectors.difference]
+min_area = 300
+
+ksize = [11, 11]
+sigma_x = 11
+threshold = 5
+
+time_of_positions = 0.2
 
 [detectors.point]
 point1_position = [300, 250]
@@ -18,6 +40,7 @@ position_margin = 15
 basket_color = [232, 255, 255]
 color_margin = 230
 basket_width = 50
+
 
 [kick_manager]
 template_path = "assets/e_button_3840x2160.png"

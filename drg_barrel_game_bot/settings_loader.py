@@ -1,6 +1,6 @@
 import toml
 
-from .utils import singleton
+from .singleton import singleton
 
 @singleton
 class TOMLSettingsLoader:

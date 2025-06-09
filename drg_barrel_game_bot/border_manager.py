@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from .detectors import Detector
+from .detectors.detectors import Detector
 from .settings_loader import TOMLSettingsLoader as TSL
 
 class BorderManager:

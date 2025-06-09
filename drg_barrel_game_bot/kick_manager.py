@@ -54,13 +54,8 @@ class KickManager:
             if self.is_barrel_debounce_time_passed():
                 if self.is_kick_delay_passed():
                     return True
-                else:
-                    print("Kick delay is not passed")
-            else:
-                print("Debounce time is not passed!")
-        else:
-            print("Barrel is not in front!")
         return False
+    
     def kick(self):
         keyboard.press_and_release("e")
         self.detected_barrel_in_front = False

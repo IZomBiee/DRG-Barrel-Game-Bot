@@ -2,7 +2,6 @@ import time
 
 class StateManager:
     '''Handles program states and logs status changes.'''
-    
     def __init__(self) -> None:
         self._state = "On Startup"
         self._state_start_time = time.perf_counter()
@@ -29,5 +28,5 @@ class StateManager:
             print(f"New Status: '{self._state}'")
             self._last_displayed_state = self._state
 
-    def display_state(self):
+    def display_state(self) -> None:
         print(f"Current State: {self._state} (for {self.state_duration()}s)")
