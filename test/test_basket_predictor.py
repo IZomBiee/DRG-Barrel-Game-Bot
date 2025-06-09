@@ -1,41 +1,33 @@
-# import cv2
-# import time
+import cv2
+import time
 
-# from drg_barrel_game_bot import BasketPredictor, HSVBasketDetector, TOMLSettingsLoader as TSL
+from drg_barrel_game_bot import BasketPredictor, AIBasketDetector
 
 
-# video_path = r"C:\Users\patri\Videos\2025-05-29 14-01-34.mkv"
-# video_fps = 30
+video_path = r"C:\Users\patri\Videos\2025-06-07 11-38-44.mkv"
+video_fps = 30
+dt = 1/video_fps
 
-# video_reader = cv2.VideoCapture(video_path)
+video_reader = cv2.VideoCapture(video_path)
 
-# frames_to_show_line = -1
+frames_to_show_line = -1
 
-# basket_detector = HSVBasketDetector()
-# basket_predictor = BasketPredictor(basket_detector)
-# while video_reader.isOpened():
-#     ret, frame= video_reader.read()
-#     frame = frame[400:700]
-#     if ret:
-#         basket_predictor.update(frame, 1/video_fps)
-#         frame = basket_detector._proccess_image(frame)
-#         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-#         basket_predictor.detector.draw_borders(frame)
-#         basket_predictor.draw_basket(frame)
-#         basket_predictor.draw_traectory(frame)
-#         if basket_predictor.is_on_left_border():
-#             left_time = basket_predictor.time_to_right_border()
-#             if left_time is not None and left_time > 0:
-#                 frames_to_show_line = round(left_time/(1/video_fps))
+detector = AIBasketDetector()
+predictor = BasketPredictor(detector)
+while video_reader.isOpened():
+    ret, frame= video_reader.read()
+    frame = AIBasketDetector.crop_to_logic_resolution(frame)
+    if ret:
+        draw_frame = frame.copy()
         
-#         print(f"Frames to position: {frames_to_show_line}")
-#         if frames_to_show_line >= 0:
-#             frames_to_show_line -= 1
-        
-#         if frames_to_show_line == 0:
-#             cv2.waitKey(1000)
+        predictor.update(frame, dt)
+        predictor.update_borders()
 
-#         cv2.imshow("Video", frame)
-#         cv2.waitKey(round(1/video_fps*1000))
-#     else:
-#         video_reader = cv2.VideoCapture(video_path)
+        predictor.draw_basket(draw_frame)
+        predictor.draw_trajectory(draw_frame)
+        predictor.draw_borders(draw_frame)
+
+        cv2.imshow("Draw Frame", draw_frame)
+        cv2.waitKey(round(dt*1000))
+    else:
+        exit()

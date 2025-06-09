@@ -4,7 +4,7 @@ from abc import ABC
 from ..settings_loader import TOMLSettingsLoader as TSL
 
 class Detector(ABC):
-    def find_x(self, image: np.ndarray) -> list[int] | None:
+    def find(self, image: np.ndarray) -> list[int] | None:
         raise NotImplementedError("Detector Method is Not Implemented")
 
     @staticmethod

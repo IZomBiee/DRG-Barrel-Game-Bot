@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from drg_barrel_game_bot import TOMLSettingsLoader as TSL
+from ..settings_loader import TOMLSettingsLoader as TSL
 from .detector import Detector
 
 class PointBasketDetector(Detector):
