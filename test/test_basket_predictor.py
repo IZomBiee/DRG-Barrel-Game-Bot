@@ -27,6 +27,12 @@ while video_reader.isOpened():
         predictor.draw_trajectory(draw_frame)
         predictor.draw_borders(draw_frame)
 
+        cv2.putText(draw_frame, f"Time To Left {round(predictor.time_to_left_border(), 2)}", (0, 100),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 1)
+        
+        cv2.putText(draw_frame, f"Cycle Time {round(predictor.cycle_time(), 2)}", (0, 200),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 1)
+
         cv2.imshow("Draw Frame", draw_frame)
         cv2.waitKey(round(dt*1000))
     else:

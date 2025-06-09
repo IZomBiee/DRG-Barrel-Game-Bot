@@ -56,14 +56,8 @@ class BasketPredictor:
     def time_to_left_border(self) -> float:
         if self.avarage_velocity[0] > 0:
             gap = self.right_border_x-self.left_border_x
-            left_px = gap-self.positions[-1][0]
+            left_px = gap-(self.positions[-1][0]-self.left_border_x)
             return left_px/self.avarage_velocity[0]
-        return -1
-    
-    def time_for_cycle(self) -> float:
-        if self.avarage_velocity[0] > 0:
-            gap = self.right_border_x-self.left_border_x
-            return gap/self.avarage_velocity[0]
         return -1
     
     def _update_avarage_velocity(self) -> None:
@@ -79,7 +73,10 @@ class BasketPredictor:
             self.avarage_velocity = [0, 0]
             
     def cycle_time(self) -> float:
-        raise NotImplementedError()
+        if self.avarage_velocity[0] > 0:
+            gap = self.right_border_x-self.left_border_x
+            return gap/self.avarage_velocity[0]
+        return -1
 
     def time_to_right_border(self) -> float:
         raise NotImplementedError()

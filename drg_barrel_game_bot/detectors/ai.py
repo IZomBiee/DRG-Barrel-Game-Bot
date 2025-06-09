@@ -38,7 +38,7 @@ class AIBasketDetector(Detector):
                 for box in boxes:
                     if int(box.cls) == self.class_index:  # Check if it's a basket
                         x_min, y_min, x_max, y_max = box.xyxy[0].tolist()
-                        
+
                         center_x = (x_min + x_max) / 2
                         center_y = (y_min + y_max) / 2
 

@@ -15,8 +15,8 @@ threshold = 30
 model_path = 'd:\Python\Yolov8-Model-Training\runs\detect\train\weights\best.pt'
 classes_path = 'd:\Python\Yolov8-Model-Training\dataset\classes.txt'
 
-score_threshold = 0.3
-iou_threshold = 0.3
+score_threshold = 0.1
+iou_threshold = 0.1
 target_size = 704
 
 [detectors.difference]
