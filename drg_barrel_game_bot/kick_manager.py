@@ -13,11 +13,10 @@ class KickManager:
         self.e_button_image = cv2.cvtColor(self.e_button_image, cv2.COLOR_BGR2GRAY)
         
         self.e_button_gap = settings['template_detection_sensitivity']
-
+        
         self.last_detected_time = 0
         self.detected_barrel_in_front = True
         self.barrel_bouncing_time = settings['barrel_bouncing_time']
-
 
     def update(self, image:np.ndarray) -> None:
         self.is_barrel_in_front(image)

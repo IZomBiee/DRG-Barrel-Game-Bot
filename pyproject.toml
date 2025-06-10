@@ -15,6 +15,10 @@ dependencies = [
     "keyboard (>=0.13.5,<0.14.0)",
     "toml (>=0.10.2,<0.11.0)",
     "ultralytics (>=8.3.152,<9.0.0)",
+    "torch (>=2.7.1,<3.0.0)",
+    "torchvision (>=0.22.1,<0.23.0)",
+    "torchaudio (>=2.7.1,<3.0.0)",
+    "pygetwindow (>=0.0.9,<0.0.10)",
 ]
 
 [build-system]
@@ -25,8 +29,6 @@ build-backend = "poetry.core.masonry.api"
 name = "pytorch-cu128"
 url = "https://download.pytorch.org/whl/cu128"
 priority = "supplemental"
-
-
 [tool.poetry.dependencies]
 torch = {source = "pytorch-cu128"}
 torchvision = {source = "pytorch-cu128"}

@@ -2,9 +2,10 @@ import cv2
 import keyboard
 import numpy as np
 import time
+import torch
 
 from drg_barrel_game_bot import AIBasketDetector, \
-Recorder, TSL, KickManager, StateManager, BasketPredictor
+WindowRecorder, TSL, KickManager, StateManager, BasketPredictor
 
 print(r"""
 ________ __________  ________  __________                             .__   
@@ -20,16 +21,20 @@ ________ __________  ________  __________                             .__
  \______  (____  /__|_|  /\___  >  |______  /\____/|__|                     
         \/     \/      \/     \/          \/                                
 """)
-print(f"Loaded this settings:\n{TSL()}")
+print(f"Loaded this settings:\n{TSL()}\n")
 
-print(f"\nPRESS {TSL()['program']['start_key'].upper()} WHEN YOU ON THE RIGHT SPOT")
+if torch.cuda.is_available():
+    print("CUDA detected, GPU acceleration will be used")
+else: print("No CUDA detected, using cpu!")
 
-cam = Recorder(region=TSL()['display']['logic_resolution'])
+cam = WindowRecorder()
 
 detector = AIBasketDetector()
 kick_manager = KickManager()
 state_manager = StateManager()
 predictor = BasketPredictor(detector)
+
+print(f"\nPRESS {TSL()['program']['start_key'].upper()} WHEN YOU ON THE RIGHT SPOT")
 
 kick_waiting_time = 0
 on_left_border_time = 0
@@ -39,14 +44,15 @@ while True:
     dt = time.perf_counter()-update_time
     update_time = time.perf_counter()
 
-    if keyboard.is_pressed(TSL()['program']['start_key']) and state_manager.state == "On Startup":
-        state_manager.state = 'Setup Borders'
-
-    frame = cam.get_screenshot()
+    frame = cam.get_frame()
 
     predictor.update(frame, dt)
     kick_manager.update(frame)
     match state_manager.state:
+        case "On Startup":
+            if keyboard.is_pressed(TSL()['program']['start_key']): 
+                state_manager.state = 'Setup Borders'
+            cam.update_region()
         case 'Setup Borders':
             predictor.update_borders()
             if state_manager.state_duration() > TSL()['basket']['border_setup_time']:
@@ -82,7 +88,9 @@ while True:
         frame = predictor.draw_trajectory(frame)
         frame = predictor.draw_borders(frame)
         frame = kick_manager.draw_state(frame)
+        
 
         cv2.imshow("Debug View", frame)
+        # cv2.imshow("Debug View", cv2.resize(frame, TSL()['display']['debug_view_resolution']))
         cv2.waitKey(1)
 
