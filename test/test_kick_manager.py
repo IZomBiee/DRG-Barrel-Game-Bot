@@ -1,4 +1,5 @@
 import cv2
+import time
 
 from drg_barrel_game_bot import KickManager, Detector
 
@@ -14,8 +15,9 @@ while video_reader.isOpened():
     frame = Detector.crop_to_basket_y_gap(frame)
     if ret:
         draw_frame = frame.copy()
-        
+
         kick_manager.update(frame)
+
         kick_manager.draw_state(draw_frame)
 
         cv2.imshow("Video", draw_frame)

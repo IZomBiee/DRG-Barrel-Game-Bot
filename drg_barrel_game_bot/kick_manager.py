@@ -18,8 +18,6 @@ class KickManager:
         self.detected_barrel_in_front = True
         self.barrel_bouncing_time = settings['barrel_bouncing_time']
 
-        self.last_kick_time = 0
-        self.kick_delay = settings['minimal_kick_delay']
 
     def update(self, image:np.ndarray) -> None:
         self.is_barrel_in_front(image)
@@ -43,10 +41,6 @@ class KickManager:
                 return True
         return False
     
-    def is_kick_delay_passed(self) -> bool:
-        if time.perf_counter()-self.last_kick_time > self.kick_delay:
-            return True
-        return False
 
     def can_kick(self, image: np.ndarray) -> bool:
         if not self.detected_barrel_in_front:
@@ -54,9 +48,6 @@ class KickManager:
             return False
         if not self.is_barrel_debounce_time_passed():
             print("Barrel bouncing!")
-            return False
-        if not self.is_kick_delay_passed():
-            print("Kick delay active!")
             return False
         return True
 
@@ -71,8 +62,6 @@ class KickManager:
             text, color = "No barrel", (0,0,255)
         elif not self.is_barrel_debounce_time_passed():
             text, color = f"Bouncing: {self.barrel_bouncing_time - (time.perf_counter()-self.last_detected_time):.2f}s", (0,0,255)
-        elif not self.is_kick_delay_passed():
-            text, color = f"Kick CD: {self.kick_delay - (time.perf_counter()-self.last_kick_time):.2f}s", (0,0,255)
         else:
             text, color = "READY TO KICK", (0,255,0)
         cv2.putText(image, text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)

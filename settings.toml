@@ -40,11 +40,6 @@ basket_width = 50
 template_path = "assets/e_button_1920x1080.png"
 template_detection_sensitivity = 0.8
 barrel_bouncing_time = 0.3
-minimal_kick_delay = 1
-
-[kick]
-kicking_detection_sensitivity = 0.3
-minimal_kick_delay = 1.5
 
 [basket_predictor]
 time_of_positions = 0.4
