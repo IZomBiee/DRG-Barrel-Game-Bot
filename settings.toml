@@ -12,12 +12,13 @@ sigma_x = 3
 threshold = 30
 
 [detectors.ai]
-model_path = 'assets/best.pt'
-classes_path = 'd:\Python\Yolov8-Model-Training\dataset\classes.txt'
+model_path = "D:\\Python\\Yolov8-Model-Training\\runs\\detect\\train3\\weights\\best.pt"
+classes_path = 'd:/Python/Yolov8-Model-Training/dataset/classes.txt'
 
 score_threshold = 0.1
 iou_threshold = 0.1
-target_size = 704
+# target_size = 704
+target_size = 320
 # target_size = 224
 
 [detectors.difference]
@@ -46,14 +47,14 @@ kicking_detection_sensitivity = 0.3
 minimal_kick_delay = 1.5
 
 [basket_predictor]
-time_of_positions = 0.2
+time_of_positions = 0.4
 border_tolirance = 50
 border_setup_time = 5.0
 velocity_checking_time = 0.3
 
 [display]
 resolution = [1920,1080]
-basket_y_gap = [400, 600]
+basket_y_gap = [0 ,700]
 debug_view = false
 
 [program]

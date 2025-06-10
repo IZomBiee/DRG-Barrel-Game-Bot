@@ -1,7 +1,7 @@
 import numpy as np
 
 from abc import ABC
-from ..settings_loader import TOMLSettingsLoader as TSL
+from ..toml_setting_loader import TOMLSettingLoader as TSL
 
 class Detector(ABC):
     def find(self, image: np.ndarray) -> list[int] | None:

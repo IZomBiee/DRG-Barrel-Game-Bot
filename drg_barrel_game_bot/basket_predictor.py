@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 from .detectors import Detector
-from .settings_loader import TOMLSettingsLoader as TSL
+from .toml_setting_loader import TOMLSettingLoader as TSL
 
 class BasketPredictor:
     '''Class for predicting basket next position and time to necessery position'''
@@ -86,7 +86,7 @@ class BasketPredictor:
         if self.avarage_velocity[0] == 0 and self.avarage_velocity[1] == 0:
             return x, y
         if left_border is None or right_border is None:
-            return round(x + self.avarage_velocity[0] * 0.1), round(y + self.avarage_velocity[1] * 0.1)
+            return round(x + self.avarage_velocity[0]), round(y + self.avarage_velocity[1])
 
         span = right_border - left_border
         if span <= 0:
@@ -95,7 +95,7 @@ class BasketPredictor:
         def bounce(pos, velocity, left, right):
             span = right - left
             current_relative = pos - left
-            new_relative = current_relative + velocity * 0.1
+            new_relative = current_relative + velocity
             remainder = new_relative % (2 * span)
             if remainder > span:
                 final_relative = 2 * span - remainder
@@ -104,7 +104,7 @@ class BasketPredictor:
             return round(left + final_relative)
 
         new_x = bounce(x, self.avarage_velocity[0], left_border, right_border)
-        new_y = round(y + self.avarage_velocity[1] * 0.1)
+        new_y = round(y + self.avarage_velocity[1])
 
         return new_x, new_y
 

@@ -3,7 +3,7 @@ import numpy as np
 import time
 import keyboard
 
-from .settings_loader import TOMLSettingsLoader as TSL
+from .toml_setting_loader import TOMLSettingLoader as TSL
 
 class KickManager:
     '''Class for meneging when do kick and can we do kick'''
@@ -12,10 +12,6 @@ class KickManager:
         self.e_button_image = cv2.imread(settings['template_path'])
         self.e_button_image = cv2.cvtColor(self.e_button_image, cv2.COLOR_BGR2GRAY)
         
-        # resolution = TSL()['display']['resolution']
-        # button_new_resolution = [round(self.e_button_image.shape[1]*(resolution[0]/3840)),
-        #                          round(self.e_button_image.shape[0]*(resolution[1]/2160))]
-        # self.e_button_image = cv2.resize(self.e_button_image, button_new_resolution)
         self.e_button_gap = settings['template_detection_sensitivity']
 
         self.last_detected_time = 0

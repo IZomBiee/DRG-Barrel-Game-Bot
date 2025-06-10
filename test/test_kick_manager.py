@@ -19,7 +19,6 @@ while video_reader.isOpened():
         kick_manager.draw_state(draw_frame)
 
         cv2.imshow("Video", draw_frame)
-        # cv2.waitKey(round(dt*1000))
-        cv2.waitKey(1)
+        cv2.waitKey(round(dt*1000))
     else:
         exit("Video Ended")

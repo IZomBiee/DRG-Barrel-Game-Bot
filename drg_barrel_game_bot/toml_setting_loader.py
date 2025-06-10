@@ -1,9 +1,9 @@
 import toml
 
-from .singleton import singleton
+from .utils.singleton import singleton
 
 @singleton
-class TOMLSettingsLoader:
+class TOMLSettingLoader:
     def __init__(self) -> None:
         self.path = "settings.toml"
         self._read()

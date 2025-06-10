@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-from ..settings_loader import TOMLSettingsLoader as TSL
+from ..toml_setting_loader import TOMLSettingLoader as TSL
 from .detector import Detector
 
 class PointBasketDetector(Detector):
