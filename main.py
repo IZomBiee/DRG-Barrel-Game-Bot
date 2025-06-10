@@ -43,7 +43,9 @@ while True:
         state_manager.state = 'Setup Borders'
 
     frame = cam.get_screenshot()
+
     predictor.update(frame, dt)
+    kick_manager.update(frame)
     match state_manager.state:
         case 'Setup Borders':
             predictor.update_borders()
@@ -61,7 +63,7 @@ while True:
                 state_manager.state = 'Waiting For Left Border'
         case 'Calculating Kick Time':
             if state_manager.state_duration() > TSL()['basket']['velocity_checking_time']:
-                delay = predictor.time_to_left_border()+predictor.time_for_cycle()/2
+                delay = predictor.time_to_left_border()+predictor.cycle_time()/2
                 delay -= TSL()['barrel']['fly_time']
                 print(f"Time to left border:{delay}")
                 if delay > 0:
@@ -71,19 +73,15 @@ while True:
                     state_manager.state = 'Waiting For Left Border'
         case 'Waiting Time For Kick':
             if state_manager.state_duration() > kick_waiting_time:
-                kick_manager.kick()
-
-                # if kick_manager.can_kick(frame):
-                #     kick_manager.kick()
-                #     print("Kick!")
-                # else:
-                #     print("Can't Kick")
+                if kick_manager.can_kick(frame):
+                    kick_manager.kick()
                 state_manager.state = 'Waiting For Left Border'
 
     if TSL()['display']['debug_view']:
         frame = predictor.draw_basket(frame)
         frame = predictor.draw_trajectory(frame)
         frame = predictor.draw_borders(frame)
+        frame = kick_manager.draw_state(frame)
 
         cv2.imshow("Debug View", frame)
         cv2.waitKey(1)

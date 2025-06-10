@@ -8,8 +8,8 @@ class Detector(ABC):
         raise NotImplementedError("Detector Method is Not Implemented")
 
     @staticmethod
-    def crop_to_logic_resolution(image: np.ndarray) -> np.ndarray:
-        x, y, w, h = TSL()["display"]["logic_resolution"]
+    def crop_to_basket_y_gap(image: np.ndarray) -> np.ndarray:
+        y0, y1= TSL()["display"]["basket_y_gap"]
 
-        image = image[y:y+h, 0: w]
+        image = image[y0:y1]
         return image

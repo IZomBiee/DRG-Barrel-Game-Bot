@@ -1,5 +1,5 @@
 [barrel]
-fly_time = 1.2
+fly_time = 1.55
 respawn_time = 2
 
 [detectors.hsv]
@@ -12,12 +12,13 @@ sigma_x = 3
 threshold = 30
 
 [detectors.ai]
-model_path = 'd:\Python\Yolov8-Model-Training\runs\detect\train\weights\best.pt'
+model_path = 'assets/best.pt'
 classes_path = 'd:\Python\Yolov8-Model-Training\dataset\classes.txt'
 
 score_threshold = 0.1
 iou_threshold = 0.1
 target_size = 704
+# target_size = 224
 
 [detectors.difference]
 min_area = 300
@@ -35,28 +36,24 @@ color_margin = 230
 basket_width = 50
 
 [kick_manager]
-template_path = "assets/e_button_3840x2160.png"
-template_detection_sensevity = 0.8
-barrel_boucing_time = 0.4
+template_path = "assets/e_button_1920x1080.png"
+template_detection_sensitivity = 0.8
+barrel_bouncing_time = 0.3
 minimal_kick_delay = 1
 
 [kick]
-kicking_detection_sensitivity = 0.6
+kicking_detection_sensitivity = 0.3
 minimal_kick_delay = 1.5
 
 [basket_predictor]
 time_of_positions = 0.2
-border_tolirance = 25
-
-[basket]
+border_tolirance = 50
 border_setup_time = 5.0
-axis_line_gap = [0.4, 0.6] 
-position_count = 0.2
 velocity_checking_time = 0.3
 
 [display]
-# resolution = [3840,2160]
 resolution = [1920,1080]
+basket_y_gap = [400, 600]
 debug_view = false
 
 [program]
