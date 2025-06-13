@@ -27,7 +27,7 @@ class WindowRecorder:
             x, y, w, h = window.box
             delete_y = (h * (1-self.y_gap))/2
             self.region = {
-                'top': int(y+delete_y),
+                'top': int(y+delete_y/2),
                 'left': x,
                 'width': w,
                 'height': int(h-delete_y),

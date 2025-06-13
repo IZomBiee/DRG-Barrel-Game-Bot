@@ -22,10 +22,10 @@ class KickManager:
         height, width = image.shape[:2]
 
         center_y = height // 2
-        center_y *= 1.13
+        center_y += height*0.1
         center_x = width // 2
 
-        y_margin = self.e_button_image.shape[0]
+        y_margin = self.e_button_image.shape[0]*3
         start_y = max(center_y - y_margin, 0)
         end_y = min(center_y + y_margin, height)
 

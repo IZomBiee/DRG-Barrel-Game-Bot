@@ -35,7 +35,7 @@ template_detection_sensitivity = 0.3
 barrel_bouncing_time = 0.3
 
 [basket_predictor]
-time_of_positions = 0.4
+time_of_positions = 0.3
 border_tolirance = 50
 border_setup_time = 5.0
 velocity_checking_time = 0.3
@@ -43,7 +43,7 @@ barrel_fly_time = 1.55
 
 [display]
 basket_y_gap = 0.3
-debug_view = false
+debug_view = true
 debug_view_resolution = [800, 600]
 
 [program]
