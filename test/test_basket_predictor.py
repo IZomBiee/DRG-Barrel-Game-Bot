@@ -13,7 +13,6 @@ detector = AIBasketDetector()
 predictor = BasketPredictor(detector)
 while video_reader.isOpened():
     ret, frame= video_reader.read()
-    frame = AIBasketDetector.crop_to_basket_y_gap(frame)
     if ret:
         draw_frame = frame.copy()
         

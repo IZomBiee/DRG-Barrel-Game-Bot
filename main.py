@@ -55,7 +55,7 @@ while True:
             cam.update_region()
         case 'Setup Borders':
             predictor.update_borders()
-            if state_manager.state_duration() > TSL()['basket']['border_setup_time']:
+            if state_manager.state_duration() > TSL()['basket_predictor']['border_setup_time']:
                 state_manager.state = 'Waiting For Left Border'
         case 'Waiting For Left Border':
             if predictor.on_left_border():
@@ -68,9 +68,9 @@ while True:
                 print("On Left Border too long!")
                 state_manager.state = 'Waiting For Left Border'
         case 'Calculating Kick Time':
-            if state_manager.state_duration() > TSL()['basket']['velocity_checking_time']:
+            if state_manager.state_duration() > TSL()['basket_predictor']['velocity_checking_time']:
                 delay = predictor.time_to_left_border()+predictor.cycle_time()/2
-                delay -= TSL()['barrel']['fly_time']
+                delay -= TSL()['basket_predictor']['barrel_fly_time']
                 print(f"Time to left border:{delay}")
                 if delay > 0:
                     kick_waiting_time = delay

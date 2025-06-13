@@ -14,7 +14,7 @@ class BasketPredictor:
         self.times = []
         self.positions = []
         
-        self.left_border_x = 1000
+        self.left_border_x = 10000
         self.right_border_x = 0
         self.border_tollirance = settings['border_tolirance']
 

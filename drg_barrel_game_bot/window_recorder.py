@@ -1,7 +1,7 @@
 import numpy as np
-import win32gui
 import pygetwindow
 
+from .utils import *
 from .toml_setting_loader import TOMLSettingLoader as TSL
 from mss import mss
 from screeninfo import get_monitors
@@ -17,18 +17,20 @@ class WindowRecorder:
             'height': monitors.height,
         }
         self.target_window_title = TSL()['program']['window_title']
+        self.y_gap = TSL()['display']['basket_y_gap']
         self.update_region()
 
     def update_region(self) -> None:
         window = pygetwindow.getWindowsWithTitle(self.target_window_title)
         if window:
             window: pygetwindow.Window = window[0]
-            y, x, w, h = window.box
+            x, y, w, h = window.box
+            delete_y = (h * (1-self.y_gap))/2
             self.region = {
-                'top': x,
-                'left': y,
+                'top': int(y+delete_y),
+                'left': x,
                 'width': w,
-                'height': h,
+                'height': int(h-delete_y),
             }
         else: print("Cant find window!")
 

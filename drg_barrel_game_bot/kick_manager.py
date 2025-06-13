@@ -19,7 +19,22 @@ class KickManager:
         self.barrel_bouncing_time = settings['barrel_bouncing_time']
 
     def update(self, image:np.ndarray) -> None:
-        self.is_barrel_in_front(image)
+        height, width = image.shape[:2]
+
+        center_y = height // 2
+        center_y *= 1.13
+        center_x = width // 2
+
+        y_margin = self.e_button_image.shape[0]
+        start_y = max(center_y - y_margin, 0)
+        end_y = min(center_y + y_margin, height)
+
+        x_margin = self.e_button_image.shape[1]
+        start_x = max(center_x - x_margin, 0)
+        end_x = min(center_x + x_margin, width)
+
+        cropped_image = image[int(start_y):int(end_y), int(start_x):int(end_x)]
+        self.is_barrel_in_front(cropped_image)
 
     def is_barrel_in_front(self, image: np.ndarray) -> bool:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
