@@ -1,7 +1,7 @@
-from .detectors import * 
-from .basket_predictor import BasketPredictor
+from .detector import Detector
+from .predictor import Predictor
 from .window_recorder import WindowRecorder
-from .toml_setting_loader import TOMLSettingLoader as TSL
+from .setting_loader import SettingLoader as SL
 from .utils.singleton import singleton
 from .kick_manager import KickManager
 from .state_manager import StateManager

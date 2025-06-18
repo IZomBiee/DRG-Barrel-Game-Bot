@@ -1,6 +1,6 @@
 [project]
 name = "drg-barrel-game-bot"
-version = "0.7.5"
+version = "0.8.0"
 description = ""
 authors = [
     {name = "IZomBie",email = "patrik009009@gmail.com"}
@@ -29,6 +29,7 @@ build-backend = "poetry.core.masonry.api"
 name = "pytorch-cu128"
 url = "https://download.pytorch.org/whl/cu128"
 priority = "supplemental"
+
 [tool.poetry.dependencies]
 torch = {source = "pytorch-cu128"}
 torchvision = {source = "pytorch-cu128"}

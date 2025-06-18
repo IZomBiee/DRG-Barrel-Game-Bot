@@ -1,25 +1,28 @@
+import unittest
 import cv2
-import time
+import json
+import os
 
 from drg_barrel_game_bot import KickManager
 
+class TestKickManager(unittest.TestCase):
+    def setUp(self):
+        self.images = []
+        self.values = []
+        test_sample_path = r'test\test_samples\kick_manager'
+        for file in os.listdir(test_sample_path):
+            name, extention = os.path.splitext(file)
+            if extention == '.json':
+                with open(os.path.join(test_sample_path, file)) as file:
+                    data: dict = json.load(file)
+                    for key in data.keys():
+                        self.images.append(cv2.imread(os.path.join(test_sample_path, key)))
+                        self.values.append(data[key])
 
-video_path = r"C:\Users\patri\Videos\2025-05-28 18-08-11.mkv"
-fps = 30
-dt = 1/fps
-kick_manager = KickManager()
-video_reader = cv2.VideoCapture(video_path)
+    def test_kick_manager(self):
+        manager = KickManager()
+        for image, value in zip(self.images, self.values):
+            self.assertIs(manager.is_barrel_in_front(image), value)
 
-while video_reader.isOpened():
-    ret, frame = video_reader.read()
-    if ret:
-        draw_frame = frame.copy()
-        
-        kick_manager.update(frame)
-
-        kick_manager.draw_state(draw_frame)
-
-        cv2.imshow("Video", draw_frame)
-        cv2.waitKey(1)
-    else:
-        exit("Video Ended")
+if __name__ == '__main__':
+    unittest.main()

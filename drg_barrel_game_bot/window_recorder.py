@@ -2,22 +2,22 @@ import numpy as np
 import pygetwindow
 
 from .utils import *
-from .toml_setting_loader import TOMLSettingLoader as TSL
+from .setting_loader import SettingLoader as SL
 from mss import mss
 from screeninfo import get_monitors
 
 class WindowRecorder:
     '''Help get frames from window with mss '''
     def __init__(self):  
-        monitors = get_monitors()[TSL()['program']['monitor_id']]
+        monitors = get_monitors()[SL()['program']['monitor_id']]
         self.region = {
             'top': 0,
             'left': 0,
             'width': monitors.width,
             'height': monitors.height,
         }
-        self.target_window_title = TSL()['program']['window_title']
-        self.y_gap = TSL()['display']['basket_y_gap']
+        self.target_window_title = SL()['program']['window_title']
+        self.y_gap = SL()['display']['basket_y_gap']
         self.update_region()
 
     def update_region(self) -> None:
