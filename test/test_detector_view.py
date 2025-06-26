@@ -3,7 +3,7 @@ import numpy as np
 import time
 from drg_barrel_game_bot import Detector
 
-test_video_path = r"test\test_samples\predictor\2025-05-29 14-01-34_00000397.mp4"
+test_video_path = r"C:\Users\patri\Videos\Timeline 1.mp4"
 
 cap = cv2.VideoCapture(test_video_path)
 
@@ -24,12 +24,9 @@ while True:
 
         pos = detector.find(frame)
         if pos is not None:
-            x0, y0, x1, y1 = pos['box']
-            frame = cv2.rectangle(frame, (x0, y0), (x1, y1), (255, 0, 255), 1)
-            frame = cv2.circle(frame, pos['center'], 5, (255, 255, 255), 1)
-        else:
-            print(f"NONE DETECTED! {time.perf_counter()}")
+            detector.draw(frame)
+
         cv2.imshow("Output", frame)
-        cv2.waitKey(100)
+        cv2.waitKey(10)
 
 cv2.destroyAllWindows()

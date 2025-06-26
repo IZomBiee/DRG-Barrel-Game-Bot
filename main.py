@@ -80,9 +80,7 @@ while True:
                 state_manager.state = 'Waiting For Left Border'
 
     if SL()['display']['debug_view']:
-        frame = predictor.draw_basket(frame)
-        frame = predictor.draw_trajectory(frame)
-        frame = predictor.draw_borders(frame)
+        frame = predictor.draw(frame)
         frame = kick_manager.draw_state(frame)
         
 

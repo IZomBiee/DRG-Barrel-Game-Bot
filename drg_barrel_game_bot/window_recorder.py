@@ -21,9 +21,9 @@ class WindowRecorder:
         self.update_region()
 
     def update_region(self) -> None:
-        window = pygetwindow.getWindowsWithTitle(self.target_window_title)
+        window = pygetwindow.getWindowsWithTitle(self.target_window_title) # type: ignore
         if window:
-            window: pygetwindow.Window = window[0]
+            window: pygetwindow.Window = window[0] # type: ignore
             x, y, w, h = window.box
             delete_y = (h * (1-self.y_gap))/2
             self.region = {
