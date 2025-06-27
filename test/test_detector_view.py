@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-import time
+import keyboard
 from drg_barrel_game_bot import Detector
 
 test_video_path = r"C:\Users\patri\Videos\Timeline 1.mp4"
@@ -14,19 +14,22 @@ dt = 1/fps
 
 detector = Detector()
 
-cv2.imshow("Output", np.zeros_like((160, 160, 3), dtype=np.uint8))
-cv2.waitKey(100)
+processed_frame_buffer = []
 
+cap = cv2.VideoCapture(test_video_path)
+for i in range(frame_count):
+    frame = cap.read()[1]
+
+    pos = detector.find(frame)
+    if pos is not None:
+        frame = detector.draw(frame)
+    print(f"Marking {i} frame...")
+    processed_frame_buffer.append(frame)
+    
+current_frame = 0
 while True:
-    cap = cv2.VideoCapture(test_video_path)
-    for i in range(frame_count):
-        frame = cap.read()[1]
+    if keyboard.is_pressed('a'):current_frame -= 1
+    elif keyboard.is_pressed('d'):current_frame += 1
+    cv2.imshow("Video", processed_frame_buffer[current_frame])
+    cv2.waitKey(int(dt*1000))
 
-        pos = detector.find(frame)
-        if pos is not None:
-            detector.draw(frame)
-
-        cv2.imshow("Output", frame)
-        cv2.waitKey(10)
-
-cv2.destroyAllWindows()

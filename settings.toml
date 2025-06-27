@@ -1,9 +1,9 @@
 [detectors.ai]
-model_path = "D:\\Python\\Yolov8-Model-Training\\runs\\detect\\train\\weights\\best.pt"
+model_path = "D:\\Python\\Yolov8-Model-Training\\runs\\detect\\train6\\weights\\best.pt" 
 
-score_threshold = 0.4
-iou_threshold = 0.4
-model_size = 704
+score_threshold = 0.7
+iou_threshold = 0.7
+model_size = 320
 
 [kick_manager]
 template_path = "assets/e_button_1920x1080.png"

@@ -1,8 +1,9 @@
 import cv2
+import keyboard
 
 from drg_barrel_game_bot import Detector, Predictor
 
-test_video_path = r"C:\Users\patri\Videos\Timeline 1.mp4"
+test_video_path = r"D:\Python\DRG-Barrel-Game-Bot\test\test_samples\borders\Timeline 1.mov"
 
 cap = cv2.VideoCapture(test_video_path)
 
@@ -17,12 +18,19 @@ for _ in range(frame_count):
     predictor.update_borders(cap.read()[1])
 predictor.clear()
 
+processed_frame_buffer = []
+
 cap = cv2.VideoCapture(test_video_path)
 for i in range(frame_count):
     frame = cap.read()[1]
     predictor.update(frame, i*dt)
-    predictor.draw(frame)
+    frame = predictor.draw(frame)
+    print(f"Marking {i} frame...")
+    processed_frame_buffer.append(frame)
 
-    cv2.imshow("Output", frame)
-    cv2.waitKey(50)
-cv2.destroyAllWindows()
+current_frame = 0
+while True:
+    if keyboard.is_pressed('a'):current_frame -= 1
+    elif keyboard.is_pressed('d'):current_frame += 1
+    cv2.imshow("Video", processed_frame_buffer[current_frame])
+    cv2.waitKey(int(dt*1000))

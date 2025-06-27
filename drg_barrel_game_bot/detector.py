@@ -73,5 +73,8 @@ class Detector:
 
         cv2.putText(image, f'Confidence: {conf:.2f}', 
                     (abs_x_min, text_y_start + 2 * spacing), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
-
+        
+        center_x = round((abs_x_min + abs_x_max) / 2)
+        center_y = round((abs_y_min + abs_y_max) / 2)
+        cv2.circle(image, (center_x, center_y), 15, (0, 255, 255), 2)
         return image
