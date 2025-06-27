@@ -1,8 +1,8 @@
 [detectors.ai]
 model_path = "D:\\Python\\Yolov8-Model-Training\\runs\\detect\\train6\\weights\\best.pt" 
 
-score_threshold = 0.7
-iou_threshold = 0.7
+score_threshold = 0.3
+iou_threshold = 0.3
 model_size = 320
 
 [kick_manager]
@@ -11,10 +11,10 @@ template_detection_sensitivity = 0.4
 barrel_bouncing_time = 0.5
 
 [basket_predictor]
-border_tolirance = 0.05
+border_tolirance = 0.005
 border_setup_time = 5.0
 barrel_fly_time = 2.3
-velocity_setup_position = 0.2
+velocity_setup_position = 0.3
 
 [display]
 basket_y_gap = 0.3

@@ -37,9 +37,7 @@ class Detector:
                 for box in boxes:
                     self.last_box = box
                     x_min, y_min, x_max, y_max = box.xyxyn[0].tolist()
-                    center_x = (x_min + x_max) / 2
-                    center_y = (y_min + y_max) / 2
-                    return [center_x, center_y]
+                    return [x_min, y_min, x_max, y_max]
         return None
 
     def draw(self, image: np.ndarray) -> np.ndarray:

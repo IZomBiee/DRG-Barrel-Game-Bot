@@ -12,7 +12,7 @@ class Predictor:
         settings = SL()['basket_predictor']
 
         self.times = []
-        self.positions = []
+        self.boxes = []
         
         self.left_border_x = 1
         self.right_border_x = 0
@@ -40,21 +40,32 @@ class Predictor:
             self.right_border = True
 
     def _update_avarage_velocity(self) -> None:
-        if len(self.positions) >= 2:
+        if len(self.boxes) >= 2:
             dt = self.times[-1]-self.times[0]
             if dt != 0:
-                dx = self.positions[-1][0] - self.positions[0][0]
-                dy = self.positions[-1][1] - self.positions[0][1]
+                dx = self.boxes[-1][0] - self.boxes[0][0]
+                dy = self.boxes[-1][1] - self.boxes[0][1]
                 self.avarage_velocity = [dx / dt, dy / dt]
             else:
                 self.avarage_velocity = [0, 0]
         else:
             self.avarage_velocity = [0, 0]
 
+    def get_last_box(self) -> list[float] | None:
+        if len(self.boxes) > 0:
+            return self.boxes[-1]
+        return None
+
+    def get_last_center_position(self) -> list[float] | None:
+        box = self.get_last_box()
+        if box is not None:
+            x0, y0, x1, y1 = box
+            return [(x0+x1)/2, (y0+y1)/2]
+
     def is_on_setup_position(self) -> bool:
-        if len(self.positions) > 0:
+        if len(self.boxes) > 0:
             gap = self.right_border_x - self.left_border_x
-            realative_position = self.positions[-1][0]-self.left_border_x
+            realative_position = self.boxes[-1][0]-self.left_border_x
             if gap*self.setup_position>realative_position: 
                 return True
             else:
@@ -62,47 +73,51 @@ class Predictor:
         return True
 
     def update_borders(self, image:np.ndarray) -> None:
-        pos = self.detector.find(image)
-        if pos is not None:
-            x, y = pos
+        box = self.detector.find(image)
+        if box is not None:
+            x0, y0, x1, y1 = box
+
+            x = (x0+x1)/2
             if self.left_border_x > x:
                 self.left_border_x = x
             if self.right_border_x < x:
                 self.right_border_x = x
 
     def update(self, image:np.ndarray, time:float) -> None:
-        pos = self.detector.find(image)
-        if pos is None:
+        box = self.detector.find(image)
+        if box is None:
             if len(self.times) > 0:
                 self.times[-1] += time
             return
-        
-        self.positions.append(pos)
+
+        self.boxes.append(box)
         self.times.append(time)
         self._update_avarage_velocity()
         self._update_border_state()
 
     def clear(self) -> None:
         self.times = []
-        self.positions = []
+        self.boxes = []
         self.avarage_velocity = [0, 0]
 
     def on_left_border(self) -> bool:
-        if len(self.positions) > 0:
-            if self.left_border_x+self.border_tollirance>self.positions[-1][0]:
+        pos = self.get_last_center_position()
+        if pos is not None:
+            if self.left_border_x+self.border_tollirance>pos[0]:
                 return True
         return False
     
     def on_right_border(self) -> bool:
-        if len(self.positions) > 0:
-            if self.right_border_x-self.border_tollirance<self.positions[-1][0]:
+        pos = self.get_last_center_position()
+        if pos is not None:
+            if self.right_border_x-self.border_tollirance<pos[0]:
                 return True
         return False
 
     def time_to_right_border(self) -> float:
         if self.avarage_velocity[0] > 0:
             gap = self.right_border_x-self.left_border_x
-            left_px = gap-(self.positions[-1][0]-self.left_border_x)
+            left_px = gap-(self.boxes[-1][0]-self.left_border_x)
             return left_px/self.avarage_velocity[0]
         return -1
             
@@ -115,25 +130,30 @@ class Predictor:
     def draw(self, image: np.ndarray) -> np.ndarray:
         image = self.detector.draw(image)
 
-        if len(self.positions) == 0:
-            return image
-
         h, w = image.shape[:2]
-        norm_x, norm_y = self.positions[-1]
-        abs_x = int(norm_x * w)
-        abs_y = int(norm_y * h)
 
         if self.left_border_x is not None:
             cv2.line(image,
                     (int(w * self.left_border_x), 0),
                     (int(w * self.left_border_x), h),
                     (0, 255, 0), 2)
+            cv2.putText(image, f"X:{int(w * self.left_border_x)}", (int(w * self.left_border_x), h//2),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         if self.right_border_x is not None:
             cv2.line(image,
                     (int(w * self.right_border_x), 0),
                     (int(w * self.right_border_x), h),
                     (0, 0, 255), 2)
+            cv2.putText(image, f"X:{int(w * self.right_border_x)}", (int(w * self.right_border_x), h//2),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+
+        pos = self.get_last_center_position()
+        if pos is None: return image
+
+        norm_x, norm_y = pos
+        abs_x = int(norm_x * w)
+        abs_y = int(norm_y * h)
 
         cv2.circle(image, (abs_x, abs_y), 6, (255, 0, 255), -1)
 
@@ -158,7 +178,10 @@ class Predictor:
 
         info_lines = [
             f'Velocity: ({vx:.3f}, {vy:.3f})',
-            f'Next pos: ({norm_x + vx:.2f}, {norm_y + vy:.2f})'
+            f'Next pos: ({norm_x + vx:.2f}, {norm_y + vy:.2f})',
+            f'Setup position: ({self.is_on_setup_position()})',
+            f'On left border: ({self.on_left_border()})',
+            f'On right border: ({self.on_right_border()})'
         ]
 
         if t_right >= 0:
@@ -167,7 +190,7 @@ class Predictor:
             info_lines.append(f'Cycle Time: {cycle:.2f}s')
 
         for i, line in enumerate(info_lines):
-            cv2.putText(image, line, (abs_x, y_offset + i * spacing),
+            cv2.putText(image, line, (abs_x, y_offset - 100 + i * spacing),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         return image
