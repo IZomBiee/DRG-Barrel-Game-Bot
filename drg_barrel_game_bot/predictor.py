@@ -63,9 +63,10 @@ class Predictor:
             return [(x0+x1)/2, (y0+y1)/2]
 
     def is_on_setup_position(self) -> bool:
-        if len(self.boxes) > 0:
+        last_pos = self.get_last_center_position()
+        if last_pos is not None:
             gap = self.right_border_x - self.left_border_x
-            realative_position = self.boxes[-1][0]-self.left_border_x
+            realative_position = last_pos[0]-self.left_border_x
             if gap*self.setup_position>realative_position: 
                 return True
             else:
@@ -86,8 +87,6 @@ class Predictor:
     def update(self, image:np.ndarray, time:float) -> None:
         box = self.detector.find(image)
         if box is None:
-            if len(self.times) > 0:
-                self.times[-1] += time
             return
 
         self.boxes.append(box)
@@ -129,43 +128,38 @@ class Predictor:
 
     def draw(self, image: np.ndarray) -> np.ndarray:
         image = self.detector.draw(image)
-
         h, w = image.shape[:2]
 
+        def draw_vertical_line(x_ratio: float, color: tuple, label: str | None = None):
+            x = int(x_ratio * w)
+            cv2.line(image, (x, 0), (x, h), color, 2)
+            if label:
+                cv2.putText(image, label, (x, h // 2), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+
         if self.left_border_x is not None:
-            cv2.line(image,
-                    (int(w * self.left_border_x), 0),
-                    (int(w * self.left_border_x), h),
-                    (0, 255, 0), 2)
-            cv2.putText(image, f"X:{int(w * self.left_border_x)}", (int(w * self.left_border_x), h//2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            draw_vertical_line(self.left_border_x, (0, 255, 0), f"X:{int(self.left_border_x * w)}")
 
         if self.right_border_x is not None:
-            cv2.line(image,
-                    (int(w * self.right_border_x), 0),
-                    (int(w * self.right_border_x), h),
-                    (0, 0, 255), 2)
-            cv2.putText(image, f"X:{int(w * self.right_border_x)}", (int(w * self.right_border_x), h//2),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+            draw_vertical_line(self.right_border_x, (0, 0, 255), f"X:{int(self.right_border_x * w)}")
+
+        draw_vertical_line(self.setup_position, (0, 0, 255), "Setup Pos")
 
         pos = self.get_last_center_position()
-        if pos is None: return image
+        if pos is None:
+            return image
 
         norm_x, norm_y = pos
-        abs_x = int(norm_x * w)
-        abs_y = int(norm_y * h)
+        abs_x, abs_y = int(norm_x * w), int(norm_y * h)
 
         cv2.circle(image, (abs_x, abs_y), 6, (255, 0, 255), -1)
 
         vx, vy = self.avarage_velocity
         vec_scale = 500
-        end_x = int(abs_x + vx * vec_scale)
-        end_y = int(abs_y + vy * vec_scale)
+        end_x, end_y = int(abs_x + vx * vec_scale), int(abs_y + vy * vec_scale)
 
         cv2.arrowedLine(image, (abs_x, abs_y), (end_x, end_y), (0, 255, 255), 2, tipLength=0.2)
 
-        pred_x = int((norm_x + vx) * w)
-        pred_y = int((norm_y + vy) * h)
+        pred_x, pred_y = int((norm_x + vx) * w), int((norm_y + vy) * h)
         cv2.circle(image, (pred_x, pred_y), 5, (0, 165, 255), -1)
 
         spacing = 25
@@ -190,8 +184,7 @@ class Predictor:
             info_lines.append(f'Cycle Time: {cycle:.2f}s')
 
         for i, line in enumerate(info_lines):
-            cv2.putText(image, line, (abs_x, y_offset - 100 + i * spacing),
+            cv2.putText(image, line, (abs_x, y_offset + i * spacing),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         return image
-

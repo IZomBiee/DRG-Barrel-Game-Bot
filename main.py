@@ -64,7 +64,7 @@ while True:
                 print("On Left Border too long!")
                 state_manager.state = 'Waiting For Left Border'
         case 'Calculating Kick Time':
-            if state_manager.state_duration() > 0.2:
+            if not predictor.is_on_setup_position():
                 delay = predictor.time_to_right_border()+predictor.cycle_time()/2
                 delay -= SL()['basket_predictor']['barrel_fly_time']
                 print(f"Time to left border:{delay}")

@@ -3,7 +3,7 @@ import keyboard
 
 from drg_barrel_game_bot import Detector, Predictor
 
-test_video_path = r"D:\Python\DRG-Barrel-Game-Bot\test\test_samples\borders\Timeline 1.mov"
+test_video_path = r"test\test_samples\predictor\2025-06-17 10-53-44_00000123.mov"
 
 cap = cv2.VideoCapture(test_video_path)
 

@@ -62,7 +62,7 @@ class TestIntegration(unittest.TestCase):
 
                 if not predictor.is_on_setup_position():
                     cycle_time = predictor.cycle_time()
-                    self.assertAlmostEqual(cycle_time, duration, delta=0.2, msg=f'"{path}" - {cycle_time}/{duration} on frame {i}')
+                    self.assertAlmostEqual(cycle_time, duration, delta=0.1, msg=f'"{path}" - {cycle_time}/{duration} on frame {i}')
                     break
 
 if __name__ == '__main__':
