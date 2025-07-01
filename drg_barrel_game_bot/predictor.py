@@ -44,7 +44,7 @@ class Predictor:
         if len(self.boxes) >= 2:
             dt = self.times[-1]-self.times[0]
             if dt != 0:
-                dx = self.boxes[-1][0] - self.boxes[0][0]
+                dx = ((self.boxes[-1][0]+self.boxes[-1][2])/2) - (self.boxes[0][0]+self.boxes[0][2])/2 
                 dy = self.boxes[-1][1] - self.boxes[0][1]
                 self.avarage_velocity = [dx / dt, dy / dt]
             else:

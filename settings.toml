@@ -14,7 +14,7 @@ barrel_bouncing_time = 0.35
 border_tolirance = 0.013
 border_setup_time = 4.0
 barrel_fly_time = 2.2
-velocity_setup_position = 0.35
+velocity_setup_position = 0.25
 
 [display]
 basket_y_gap = 0.3

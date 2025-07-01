@@ -4,7 +4,7 @@ import keyboard
 from drg_barrel_game_bot.utils import Draw
 from drg_barrel_game_bot import Detector, Predictor
 
-test_video_path = r"test\test_samples\predictor\2025-06-17 10-53-44_00000123.mov"
+test_video_path = r"D:\Python\DRG-Barrel-Game-Bot\test\test_samples\predictor\2025-06-17 10-53-44_00000552.mov" # Should be 3.33
 
 cap = cv2.VideoCapture(test_video_path)
 
@@ -27,7 +27,7 @@ for i in range(frame_count):
     frame = cap.read()[1]
     predictor.update(frame, i*dt)
     frame = predictor.draw(frame)
-    frame = predictor.draw_trail(frame, from_center=False)
+    frame = predictor.draw_trail(frame, 5)
     frame = Draw.text(frame, 200, 200, f'Frame: {i+1}/{frame_count}', (255, 255, 255))
     processed_frame_buffer.append(frame)
     print("\033[A                             \033[A")
