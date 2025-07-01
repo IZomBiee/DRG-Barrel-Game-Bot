@@ -65,14 +65,9 @@ class Predictor:
 
     def is_on_setup_position(self) -> bool:
         last_pos = self.get_last_center_position()
-        if last_pos is not None:
-            gap = self.right_border_x - self.left_border_x
-            realative_position = last_pos[0]-self.left_border_x
-            if gap*self.setup_position>realative_position: 
-                return True
-            else:
-                return False
-        return True
+        if last_pos is None or self.get_setup_position()>last_pos[0]: 
+            return True
+        return False
 
     def update_borders(self, image:np.ndarray) -> None:
         box = self.detector.find(image)
@@ -99,6 +94,9 @@ class Predictor:
         self.times = []
         self.boxes = []
         self.avarage_velocity = [0, 0]
+
+    def get_setup_position(self) -> float:
+        return self.left_border_x + (self.right_border_x - self.left_border_x) * self.setup_position
 
     def on_left_border(self) -> bool:
         pos = self.get_last_center_position()
@@ -143,6 +141,7 @@ class Predictor:
 
         Draw.vertical_line(image, width*self.right_border_x, (0, 0, 255))
         Draw.vertical_line(image, width*self.left_border_x, (255, 0, 0))
+        Draw.vertical_line(image, width*self.get_setup_position(), (0, 255, 255))
         
         self.detector.draw(image)        
 
@@ -150,5 +149,29 @@ class Predictor:
             f'Right: {round(self.time_to_right_border(), 2)}',
             f'Cycle: {round(self.cycle_time(), 2)}'
         ], (255, 255, 255))
+
+        return image
+    
+    
+    def draw_trail(self, image:np.ndarray, lenght:float=1.0,
+                   from_center:bool=True) -> np.ndarray:
+        previous_position = None
+        height, width = image.shape[:2]
+        thickness = max(1, width//600)
+
+        for index, box in enumerate(self.boxes[::-1]):
+            if self.times[index] - self.times[0] > lenght:
+                break
+            
+            center_y = int((box[1]+box[3])/2*height)
+            if from_center:
+                center_x = int((box[0]+box[2])/2*width)
+            else:
+                center_x = int(box[0]*width)
+            if previous_position is not None:
+                image = cv2.line(image, (previous_position[0], previous_position[1]),
+                         (center_x, center_y), (255, 0, 0), thickness)
+            image = cv2.circle(image, (center_x, center_y), thickness, (0, 120, 255), thickness)
+            previous_position = [center_x, center_y]
 
         return image

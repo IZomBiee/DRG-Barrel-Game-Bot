@@ -18,18 +18,21 @@ processed_frame_buffer = []
 
 cap = cv2.VideoCapture(test_video_path)
 for i in range(frame_count):
+    print(f"Processed {i}/{frame_count} frames")
     frame = cap.read()[1]
 
     pos = detector.find(frame)
     if pos is not None:
         frame = detector.draw(frame)
-    print(f"Marking {i} frame...")
     processed_frame_buffer.append(frame)
+    print("\033[A                             \033[A")
     
 current_frame = 0
 while True:
-    if keyboard.is_pressed('a'):current_frame -= 1
-    elif keyboard.is_pressed('d'):current_frame += 1
-    cv2.imshow("Video", processed_frame_buffer[current_frame])
+    if keyboard.is_pressed('a') and current_frame > 0:current_frame -= 1
+    elif keyboard.is_pressed('d') and current_frame < frame_count-1:current_frame += 1
+    frame = processed_frame_buffer[current_frame]
+
+    cv2.imshow("Video", frame)
     cv2.waitKey(int(dt*1000))
 
