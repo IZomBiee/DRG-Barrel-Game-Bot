@@ -23,6 +23,7 @@ processed_frame_buffer = []
 cap = cv2.VideoCapture(test_video_path)
 for i in range(frame_count):
     frame = cap.read()[1]
+    frame = cv2.resize(frame, (800, 800))
     predictor.update(frame, i*dt)
     frame = predictor.draw(frame)
     print(f"Marking {i} frame...")

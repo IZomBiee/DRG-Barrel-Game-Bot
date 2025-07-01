@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 
+from .utils import Draw
 from .setting_loader import SettingLoader as SL
 from ultralytics import YOLO
 
@@ -43,36 +44,18 @@ class Detector:
     def draw(self, image: np.ndarray) -> np.ndarray:
         if self.last_box is None:
             return image
-
-        x_min, y_min, x_max, y_max = self.last_box.xyxyn[0].tolist()
-        center_x = (x_min + x_max) / 2
-        center_y = (y_min + y_max) / 2
-
-        h, w = image.shape[:2]
-        abs_center_x = int(center_x * w)
-        abs_center_y = int(center_y * h)
-
-        conf = float(self.last_box.conf)
-
-        abs_x_min = int(x_min * w)
-        abs_y_min = int(y_min * h)
-        abs_x_max = int(x_max * w)
-        abs_y_max = int(y_max * h)
-        cv2.rectangle(image, (abs_x_min, abs_y_min), (abs_x_max, abs_y_max), (0, 255, 0), 2)
-
-        text_y_start = abs_y_max + 20
-        spacing = 30
-
-        cv2.putText(image, f'Norm Pos: ({center_x:.2f}, {center_y:.2f})', 
-                    (abs_x_min, text_y_start), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
-        cv2.putText(image, f'Abs Pos: ({abs_center_x}, {abs_center_y})', 
-                    (abs_x_min, text_y_start + spacing), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
-        cv2.putText(image, f'Confidence: {conf:.2f}', 
-                    (abs_x_min, text_y_start + 2 * spacing), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
         
-        center_x = round((abs_x_min + abs_x_max) / 2)
-        center_y = round((abs_y_min + abs_y_max) / 2)
-        cv2.circle(image, (center_x, center_y), 15, (0, 255, 255), 2)
+        height, width = image.shape[:2]
+
+        x_min, y_min, x_max, y_max = [int(i) for i in self.last_box.xyxy[0].tolist()]
+        center_x = (x_max+x_min)//2
+        center_y = (y_max+y_min)//2
+        confidence = float(self.last_box.conf)
+
+        image = cv2.rectangle(image, (x_min, y_min), (x_max, y_max), (0, 255, 0), 3)
+        image = Draw.texts(image, center_x, y_min, [
+            f'Conf:{round(confidence*100)}%',
+            f'Pos:{center_x, center_y}'
+        ], (255, 255, 255), direction=-1)
+        
         return image

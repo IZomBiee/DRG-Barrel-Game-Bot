@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import time
+from .utils import *
 
 from .detector import Detector
 from .setting_loader import SettingLoader as SL
@@ -19,7 +20,7 @@ class Predictor:
         self.border_tollirance = settings['border_tolirance']
         self.setup_position = settings['velocity_setup_position']
 
-        self.avarage_velocity = [0, 0]
+        self.avarage_velocity = [0., 0.]
 
         self.left_border = False
         self.right_border = False
@@ -127,64 +128,27 @@ class Predictor:
         return -1
 
     def draw(self, image: np.ndarray) -> np.ndarray:
-        image = self.detector.draw(image)
-        h, w = image.shape[:2]
-
-        def draw_vertical_line(x_ratio: float, color: tuple, label: str | None = None):
-            x = int(x_ratio * w)
-            cv2.line(image, (x, 0), (x, h), color, 2)
-            if label:
-                cv2.putText(image, label, (x, h // 2), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-
-        if self.left_border_x is not None:
-            draw_vertical_line(self.left_border_x, (0, 255, 0), f"X:{int(self.left_border_x * w)}")
-
-        if self.right_border_x is not None:
-            draw_vertical_line(self.right_border_x, (0, 0, 255), f"X:{int(self.right_border_x * w)}")
-
-        draw_vertical_line(self.setup_position, (0, 0, 255), "Setup Pos")
-
-        pos = self.get_last_center_position()
-        if pos is None:
+        last_position = self.get_last_center_position()
+        last_box = self.get_last_box()
+        if last_position is None or last_box is None:
             return image
+        
+        image = self.detector.draw(image)
+        height, width = image.shape[:2]
+        
+        normalized_x, normalized_y = last_position
+        normalized_velocity_x, normalized_velocity_y = self.avarage_velocity
+        Draw.vector_normalized(image, normalized_x, normalized_y, normalized_velocity_x, normalized_velocity_y, (0, 255, 0), 1)
 
-        norm_x, norm_y = pos
-        abs_x, abs_y = int(norm_x * w), int(norm_y * h)
 
-        cv2.circle(image, (abs_x, abs_y), 6, (255, 0, 255), -1)
+        Draw.vertical_line(image, width*self.right_border_x, (0, 0, 255))
+        Draw.vertical_line(image, width*self.left_border_x, (255, 0, 0))
+        
+        self.detector.draw(image)        
 
-        vx, vy = self.avarage_velocity
-        vec_scale = 500
-        end_x, end_y = int(abs_x + vx * vec_scale), int(abs_y + vy * vec_scale)
-
-        cv2.arrowedLine(image, (abs_x, abs_y), (end_x, end_y), (0, 255, 255), 2, tipLength=0.2)
-
-        pred_x, pred_y = int((norm_x + vx) * w), int((norm_y + vy) * h)
-        cv2.circle(image, (pred_x, pred_y), 5, (0, 165, 255), -1)
-
-        spacing = 25
-        y_offset = abs_y - spacing * 3 - 10
-        if y_offset < 10:
-            y_offset = abs_y + 30
-
-        t_right = self.time_to_right_border()
-        cycle = self.cycle_time()
-
-        info_lines = [
-            f'Velocity: ({vx:.3f}, {vy:.3f})',
-            f'Next pos: ({norm_x + vx:.2f}, {norm_y + vy:.2f})',
-            f'Setup position: ({self.is_on_setup_position()})',
-            f'On left border: ({self.on_left_border()})',
-            f'On right border: ({self.on_right_border()})'
-        ]
-
-        if t_right >= 0:
-            info_lines.append(f'Time to Right: {t_right:.2f}s')
-        if cycle >= 0:
-            info_lines.append(f'Cycle Time: {cycle:.2f}s')
-
-        for i, line in enumerate(info_lines):
-            cv2.putText(image, line, (abs_x, y_offset + i * spacing),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+        Draw.texts(image, width*last_position[0], height*last_box[3]*1.1, [
+            f'Right: {round(self.time_to_right_border(), 2)}',
+            f'Cycle: {round(self.cycle_time(), 2)}'
+        ], (255, 255, 255))
 
         return image

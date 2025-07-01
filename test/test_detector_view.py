@@ -3,7 +3,7 @@ import numpy as np
 import keyboard
 from drg_barrel_game_bot import Detector
 
-test_video_path = r"C:\Users\patri\Videos\Timeline 1.mp4"
+test_video_path = r"test\test_samples\predictor\2025-06-17 10-53-44_00000123.mov"
 
 cap = cv2.VideoCapture(test_video_path)
 
