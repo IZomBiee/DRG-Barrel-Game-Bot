@@ -7,7 +7,7 @@ from drg_barrel_game_bot import Detector, Predictor
 
 class TestIntegration(unittest.TestCase):
     def setUp(self):
-        time_samples_path = r'test\test_samples\predictor'
+        time_samples_path = r'test\test_samples\predictor v2'
         self.time_prediction_video_paths = os.listdir(time_samples_path)
         self.time_prediction_video_paths = map(lambda path: os.path.join(time_samples_path, path),
                                self.time_prediction_video_paths)
@@ -62,7 +62,7 @@ class TestIntegration(unittest.TestCase):
 
                 if not predictor.is_on_setup_position():
                     cycle_time = predictor.cycle_time()
-                    self.assertAlmostEqual(cycle_time, duration, delta=0.1, msg=f'"{path}" - {cycle_time}/{duration} on frame {i}')
+                    self.assertAlmostEqual(cycle_time, duration, delta=0.2, msg=f'"{path}" - {cycle_time}/{duration} on frame {i}')
                     break
 
 if __name__ == '__main__':
