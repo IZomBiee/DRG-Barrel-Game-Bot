@@ -6,6 +6,7 @@ import torch
 
 from drg_barrel_game_bot import Detector, \
 WindowRecorder, SL, KickManager, StateManager, Predictor
+from drg_barrel_game_bot.utils import Resize
 
 print(r"""
 ________ __________  ________  __________                             .__   
@@ -87,7 +88,7 @@ while True:
                 state_manager.state = 'Waiting For Left Border'
 
     if SL()['display']['debug_view'] or video_writer is not None:
-        frame = cv2.resize(frame, SL()['display']['debug_view_resolution'])
+        frame = Resize.letterbox(frame, SL()['display']['debug_view_resolution'], (0, 0, 0))
         frame = predictor.draw(frame)
         frame = kick_manager.draw_state(frame)
         

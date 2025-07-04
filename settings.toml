@@ -17,10 +17,10 @@ barrel_fly_time = 2.4
 velocity_setup_position = 0.3
 
 [display]
-basket_y_gap = 0.3
+basket_y_gap = 0.7
 debug_view = true
 debug_video = true
-debug_view_resolution = [1200, 600]
+debug_view_resolution = [2200, 600]
 
 [program]
 monitor_id = 0

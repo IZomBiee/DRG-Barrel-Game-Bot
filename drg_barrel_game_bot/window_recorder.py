@@ -25,12 +25,13 @@ class WindowRecorder:
         if window:
             window: pygetwindow.Window = window[0] # type: ignore
             x, y, w, h = window.box
-            delete_y = (h * (1-self.y_gap))/2
+            crop_each_side = (h * self.y_gap) / 2
+
             self.region = {
-                'top': int(y+delete_y/2),
+                'top': int(y + crop_each_side),
                 'left': x,
                 'width': w,
-                'height': int(h-delete_y),
+                'height': int(h - self.y_gap * h),
             }
         else: print("Cant find window!")
 
