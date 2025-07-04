@@ -4,11 +4,11 @@ import keyboard
 from drg_barrel_game_bot.utils import Draw
 from drg_barrel_game_bot import Detector, Predictor
 
-test_video_path = r"C:\Users\patri\Videos\Timeline 1.mp4"
+test_video_path = r"D:\Python\DRG-Barrel-Game-Bot\test\test_samples\predictor\2025-06-17 10-53-44_00000123.mov"
 cap = cv2.VideoCapture(test_video_path)
 
 fps = cap.get(cv2.CAP_PROP_FPS)
-frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))-1
 duration = round(frame_count/fps, 2)
 dt = 1/fps
 
@@ -17,7 +17,10 @@ predictor = Predictor(detector)
 
 for i in range(int(5/dt)):
     print(f"Border detection {i}/{int(5/dt)} frames")
-    predictor.update_borders(cap.read()[1])
+    frame = cap.read()[1]
+    if frame is None:
+        break
+    predictor.update_borders(frame)
     print("\033[A                             \033[A")
 
 predictor.clear()
@@ -29,6 +32,8 @@ cap = cv2.VideoCapture(test_video_path)
 for i in range(frame_count):
     print(f"Processed {i}/{frame_count} frames")
     frame = cap.read()[1]
+    if frame is None:
+        break
     predictor.update(frame, i*dt)
     if detector.last_box is not None:
         position_buffer.append(detector.last_box.xyxy.tolist()[0])

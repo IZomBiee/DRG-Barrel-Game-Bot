@@ -7,7 +7,7 @@ from drg_barrel_game_bot import Detector, Predictor
 
 class TestIntegration(unittest.TestCase):
     def setUp(self):
-        time_samples_path = r'test\test_samples\predictor v2'
+        time_samples_path = r'test\test_samples\predictor'
         self.time_prediction_video_paths = os.listdir(time_samples_path)
         self.time_prediction_video_paths = map(lambda path: os.path.join(time_samples_path, path),
                                self.time_prediction_video_paths)

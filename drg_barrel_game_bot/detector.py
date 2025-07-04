@@ -47,7 +47,8 @@ class Detector:
         
         height, width = image.shape[:2]
 
-        x_min, y_min, x_max, y_max = [int(i) for i in self.last_box.xyxy[0].tolist()]
+        x_min, y_min, x_max, y_max = self.last_box.xyxyn[0].tolist()
+        x_min, y_min, x_max, y_max = [int(i) for i in (x_min*width, y_min*height, x_max*width, y_max*height)]
         center_x = (x_max+x_min)//2
         center_y = (y_max+y_min)//2
         confidence = float(self.last_box.conf)
