@@ -24,6 +24,7 @@ class Predictor:
 
         self.left_border = False
         self.right_border = False
+        print("Initialized Predictor")
 
     def _update_border_state(self):
         if self.left_border:
@@ -44,7 +45,8 @@ class Predictor:
         if len(self.boxes) >= 2:
             dt = self.times[-1]-self.times[0]
             if dt != 0:
-                dx = ((self.boxes[-1][0]+self.boxes[-1][2])/2) - (self.boxes[0][0]+self.boxes[0][2])/2 
+                # dx = ((self.boxes[-1][0]+self.boxes[-1][2])/2) - (self.boxes[0][0]+self.boxes[0][2])/2 
+                dx = self.boxes[-1][0] - self.boxes[0][0]
                 dy = self.boxes[-1][1] - self.boxes[0][1]
                 self.avarage_velocity = [dx / dt, dy / dt]
             else:
@@ -57,11 +59,11 @@ class Predictor:
             return self.boxes[-1]
         return None
 
-    def get_last_center_position(self) -> list[float] | None:
+    def get_last_center_position(self) -> tuple[float, float] | None:
         box = self.get_last_box()
         if box is not None:
             x0, y0, x1, y1 = box
-            return [(x0+x1)/2, (y0+y1)/2]
+            return ((x0+x1)/2, (y0+y1)/2)
 
     def is_on_setup_position(self) -> bool:
         last_pos = self.get_last_center_position()
@@ -69,12 +71,11 @@ class Predictor:
             return True
         return False
 
-    def update_borders(self, image:np.ndarray) -> None:
-        box = self.detector.find(image)
-        if box is not None:
-            x0, y0, x1, y1 = box
+    def update_borders(self) -> None:
+        pos = self.get_last_center_position() 
+        if pos is not None:
+            x, y = pos
 
-            x = (x0+x1)/2
             if self.left_border_x > x:
                 self.left_border_x = x
             if self.right_border_x < x:

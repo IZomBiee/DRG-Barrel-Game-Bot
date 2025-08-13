@@ -1,31 +1,15 @@
 import cv2
 import keyboard
-import numpy as np
 import time
 import torch
 
+from collections import deque
 from drg_barrel_game_bot import Detector, \
 WindowRecorder, SL, KickManager, StateManager, Predictor
 from drg_barrel_game_bot.utils import Resize
 
-print(r"""
-________ __________  ________  __________                             .__   
-\______ \\______   \/  _____/  \______   \_____ ______________   ____ |  |  
- |    |  \|       _/   \  ___   |    |  _/\__  \\_  __ \_  __ \_/ __ \|  |  
- |    `   \    |   \    \_\  \  |    |   \ / __ \|  | \/|  | \/\  ___/|  |__
-/_______  /____|_  /\______  /  |______  /(____  /__|   |__|    \___  >____/
-        \/       \/        \/          \/      \/                   \/      
-  ________                        __________        __                      
- /  _____/_____    _____   ____   \______   \ _____/  |_                    
-/   \  ___\__  \  /     \_/ __ \   |    |  _//  _ \   __\                   
-\    \_\  \/ __ \|  Y Y  \  ___/   |    |   (  <_> )  |                     
- \______  (____  /__|_|  /\___  >  |______  /\____/|__|                     
-        \/     \/      \/     \/          \/                                
-""")
-print(f"Loaded this settings:\n{SL()}\n")
-
 if torch.cuda.is_available():
-    print("CUDA detected, GPU acceleration will be used")
+    print("CUDA detected, GPU acceleration will be used.")
 else: print("No CUDA detected, using cpu!")
 
 cam = WindowRecorder()
@@ -43,10 +27,13 @@ last_start_key_time = 0
 
 video_writer = None
 if SL()['display']['debug_video']:
-    video_writer = cv2.VideoWriter('debug_view.mp4', cv2.VideoWriter.fourcc(*'avc1'),
+    debug_video_path = 'debug_view.mp4'
+    print(f"Starting writing video at {debug_video_path}")
+    video_writer = cv2.VideoWriter(debug_video_path, cv2.VideoWriter.fourcc(*'avc1'),
                                    20.0, SL()['display']['debug_view_resolution'])
-
+fps_list = deque(maxlen=60)
 while True:
+    loop_start_time = time.perf_counter()
     frame = cam.get_frame()
 
     predictor.update(frame, time.perf_counter())
@@ -58,7 +45,7 @@ while True:
                 last_start_key_time = time.perf_counter()
             cam.update_region()
         case 'Setup Borders':
-            predictor.update_borders(frame)
+            predictor.update_borders()
             if state_manager.state_duration() > SL()['basket_predictor']['border_setup_time']:
                 state_manager.state = 'Waiting For Left Border'
         case 'Waiting For Left Border':
@@ -88,10 +75,15 @@ while True:
                 state_manager.state = 'Waiting For Left Border'
 
     if SL()['display']['debug_view'] or video_writer is not None:
-        frame = Resize.letterbox(frame, SL()['display']['debug_view_resolution'], (0, 0, 0))
         frame = predictor.draw(frame)
-        frame = kick_manager.draw_state(frame)
         
+        frame = Resize.letterbox(frame, SL()['display']['debug_view_resolution'], (0, 0, 0))
+        frame = kick_manager.draw_state(frame)
+        fps = 1//(time.perf_counter()-loop_start_time)
+        fps_list.append(fps)
+        frame = cv2.putText(frame, f'FPS: {sum(fps_list)//len(fps_list)}',
+                            (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255),
+                            2)
 
         if SL()['display']['debug_view']:
             cv2.imshow("Debug View", frame)
@@ -102,11 +94,13 @@ while True:
             video_writer.write(frame)
     
     if keyboard.is_pressed(SL()['program']['stop_key']) and \
-        time.perf_counter()-last_start_key_time>1:
+        time.perf_counter()-last_start_key_time>1 and \
+        state_manager.state != "On Startup":
         break
 
-print("GOODBYE!")
 if video_writer is not None:
+    print("Saving debug video...")
     video_writer.release() 
     cv2.destroyAllWindows()
 
+print("GOODBYE!")

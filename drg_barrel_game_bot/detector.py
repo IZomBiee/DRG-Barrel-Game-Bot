@@ -14,8 +14,11 @@ class Detector:
         self.iou_threshold = settings['iou_threshold']
         self.target_size = settings['model_size']
         self.model = YOLO(model_path)
-
+        
         self.last_box = None
+        print("Initialized Detector with "
+              f"target size {self.target_size} and model from "
+              f"{model_path}.")
 
     def find(self, image: np.ndarray) -> list[float] | None:
         image = cv2.cvtColor(image, cv2.COLOR_RGBA2RGB)

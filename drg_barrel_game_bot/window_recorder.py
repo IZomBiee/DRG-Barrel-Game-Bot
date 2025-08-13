@@ -19,6 +19,8 @@ class WindowRecorder:
         self.target_window_title = SL()['program']['window_title']
         self.y_gap = SL()['display']['basket_y_gap']
         self.update_region()
+        print("Initialized WindowRecorder with tilte "+
+              f"{self.target_window_title} and region: {self.region}")
 
     def update_region(self) -> None:
         window = pygetwindow.getWindowsWithTitle(self.target_window_title) # type: ignore

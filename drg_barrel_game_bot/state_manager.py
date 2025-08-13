@@ -6,6 +6,7 @@ class StateManager:
         self._state = "On Startup"
         self._state_start_time = time.perf_counter()
         self._last_displayed_state = self._state
+        print(f"Initialized StateManager with state {self._state}")
 
     def state_duration(self) -> float:
         return round(time.perf_counter() - self._state_start_time, 2)

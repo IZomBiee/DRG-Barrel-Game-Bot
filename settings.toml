@@ -1,26 +1,26 @@
 [detectors.ai]
-model_path = "D:\\Python\\Yolov8-Model-Training\\runs\\detect\\train6\\weights\\best.pt" 
+model_path = "D:\\Projects\\Python\\Yolo-Model-Training\\runs\\detect\\DRG-Hole-Dataset2\\weights\\best.pt" 
 
 score_threshold = 0.3
 iou_threshold = 0.3
-model_size = 320
+model_size = 640
 
 [kick_manager]
 template_path = "assets/e_button_1920x1080.png"
 template_detection_sensitivity = 0.4
-barrel_bouncing_time = 0.3
+barrel_bouncing_time = 0.4
 
 [basket_predictor]
-border_tolirance = 0.013
-border_setup_time = 4.0
-barrel_fly_time = 2.4
+border_tolirance = 0.05
+border_setup_time = 5
+barrel_fly_time = 2.2
 velocity_setup_position = 0.3
 
 [display]
-basket_y_gap = 0.7
+basket_y_gap = 0.8
 debug_view = true
-debug_video = true
-debug_view_resolution = [2200, 600]
+debug_video = false
+debug_view_resolution = [2000, 800]
 
 [program]
 monitor_id = 0
