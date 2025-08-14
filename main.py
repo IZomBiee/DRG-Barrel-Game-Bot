@@ -2,6 +2,8 @@ import cv2
 import keyboard
 import time
 import torch
+import cProfile
+import pstats
 
 from collections import deque
 from drg_barrel_game_bot import Detector, \
@@ -31,10 +33,15 @@ if SL()['display']['debug_video']:
     print(f"Starting writing video at {debug_video_path}")
     video_writer = cv2.VideoWriter(debug_video_path, cv2.VideoWriter.fourcc(*'avc1'),
                                    20.0, SL()['display']['debug_view_resolution'])
-fps_list = deque(maxlen=60)
+
+profiler = cProfile.Profile()
+profiler.enable()
+
+fps_list = deque(maxlen=20)
 while True:
     loop_start_time = time.perf_counter()
     frame = cam.get_frame()
+    if frame is None or not cam.is_updated():continue
 
     predictor.update(frame, time.perf_counter())
     kick_manager.update(frame)
@@ -102,5 +109,9 @@ if video_writer is not None:
     print("Saving debug video...")
     video_writer.release() 
     cv2.destroyAllWindows()
+
+profiler.disable()
+stats = pstats.Stats(profiler).sort_stats("cumtime")
+stats.print_stats(20)  # top 20 slowest functions
 
 print("GOODBYE!")
