@@ -13,14 +13,15 @@ barrel_bouncing_time = 0.3
 [basket_predictor]
 border_tolirance = 0.05
 border_setup_time = 5
-barrel_fly_time = 2.2
+barrel_fly_time = 2.1
 velocity_setup_position = 0.3
+max_time = 5
 
 [display]
-basket_y_gap = 0.8 # Bigger - Faster
+basket_y_gap = 0.6 # Bigger - Faster
 debug_view = true
-debug_video = false
-debug_view_resolution = [2000, 800]
+debug_video = true
+debug_view_scalling = 1
 
 [program]
 monitor_id = 0

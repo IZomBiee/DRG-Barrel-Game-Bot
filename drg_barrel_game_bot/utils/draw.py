@@ -12,7 +12,8 @@ class Draw:
         return image
 
     @staticmethod
-    def text(image: np.ndarray, x: int | float, y: int | float, text: str, color: tuple[int, int, int]) -> np.ndarray:
+    def text(image: np.ndarray, x: int | float, y: int | float,
+             text: str, color: tuple[int, int, int]) -> np.ndarray:
         x = int(x)
         y = int(y)
         height, width = image.shape[:2]
@@ -29,8 +30,8 @@ class Draw:
         x = int(x)
         y = int(y)
         height, width = image.shape[:2]
-        font_scale = max(1, width // 1000)
-        thickness = max(1, width // 800)
+        font_scale = max(1, min(width, height) // 1000)
+        thickness = max(1, min(width, height) // 800)
 
         for i, text in enumerate(texts):
             text_size_x, text_size_y = cv2.getTextSize(texts[0], cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)[0]

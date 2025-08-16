@@ -60,7 +60,6 @@ class WindowRecorder:
                     if self._frame is None or not np.array_equal(frame, self._frame):
                         self._updated = True
                         self._frame = frame
-                sleep(0.01)  # optional small delay to reduce CPU
 
     def get_frame(self) -> np.ndarray | None:
         """Return the latest frame and mark it as read (reset _updated)."""

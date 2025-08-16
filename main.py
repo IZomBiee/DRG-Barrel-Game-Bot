@@ -3,6 +3,7 @@ import keyboard
 import time
 import torch
 
+from drg_barrel_game_bot.utils.draw import Draw
 from collections import deque
 from drg_barrel_game_bot import Detector, \
 WindowRecorder, SL, KickManager, StateManager, Predictor
@@ -26,23 +27,31 @@ on_left_border_time = 0
 last_start_key_time = 0
 
 video_writer = None
-if SL()['display']['debug_video']:
-    debug_video_path = 'debug_view.mp4'
-    print(f"Starting writing video at {debug_video_path}")
-    video_writer = cv2.VideoWriter(debug_video_path, cv2.VideoWriter.fourcc(*'avc1'),
-                                   20.0, SL()['display']['debug_view_resolution'])
 
 fps_list = deque(maxlen=20)
 while True:
     loop_start_time = time.perf_counter()
     frame = cam.get_frame()
     if frame is None or not cam.is_updated():continue
+    
+    fps_len = len(fps_list)
+    if fps_len == 0:
+        avg_fps = 0
+    else:
+        avg_fps = round(sum(fps_list)/fps_len)
 
     predictor.update(frame, time.perf_counter())
     kick_manager.update(frame)
     match state_manager.state:
         case "On Startup":
             if keyboard.is_pressed(SL()['program']['start_key']): 
+                if SL()['display']['debug_video']:
+                    debug_video_path = 'debug_view.mp4'
+                    print(f"Starting writing video at {debug_video_path}")
+                    video_writer = cv2.VideoWriter(debug_video_path,
+                        cv2.VideoWriter.fourcc(*'avc1'),
+                        avg_fps, (cam.region['width'], cam.region['height']))
+
                 state_manager.state = 'Setup Borders'
                 last_start_key_time = time.perf_counter()
             cam.update_region()
@@ -63,8 +72,13 @@ while True:
         case 'Calculating Kick Time':
             if not predictor.is_on_setup_position():
                 delay = predictor.time_to_right_border()+predictor.cycle_time()/2
+                if delay > SL()['basket_predictor']['max_time']:
+                    print(f"The waiting time is too big! ({delay})")
+                    state_manager.state = 'Waiting For Left Border'
+                    continue
+                
                 delay -= SL()['basket_predictor']['barrel_fly_time']
-                print(f"Time to left border:{delay}")
+                
                 if delay > 0:
                     kick_waiting_time = delay
                     state_manager.state = 'Waiting Time For Kick'
@@ -79,22 +93,29 @@ while True:
     if SL()['display']['debug_view'] or video_writer is not None:
         frame = predictor.draw(frame)
         
-        frame = Resize.letterbox(frame, SL()['display']['debug_view_resolution'], (0, 0, 0))
         frame = kick_manager.draw_state(frame)
-        fps = 1//(time.perf_counter()-loop_start_time)
-        fps_list.append(fps)
-        frame = cv2.putText(frame, f'FPS: {sum(fps_list)//len(fps_list)}',
-                            (200, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255),
-                            2)
+        frame = Draw.texts(
+            frame, 180, frame.shape[0], [
+                f'FPS: {avg_fps}',
+                f'State: {state_manager.state}'
+            ], (255, 255, 255), -1
+        )
+        
+        height, width = frame.shape[:2]
+        scalling = SL()['display']['debug_view_scalling']
+        frame = cv2.resize(frame, (int(width*scalling),
+                                   int(height*scalling)))
 
         if SL()['display']['debug_view']:
-            cv2.imshow("Debug View", frame)
             cv2.imshow("Debug View", frame)
             cv2.waitKey(1)
         
         if video_writer is not None:
             video_writer.write(frame)
     
+    fps = 1//(time.perf_counter()-loop_start_time)
+    fps_list.append(fps)
+
     if keyboard.is_pressed(SL()['program']['stop_key']) and \
         time.perf_counter()-last_start_key_time>1 and \
         state_manager.state != "On Startup":
