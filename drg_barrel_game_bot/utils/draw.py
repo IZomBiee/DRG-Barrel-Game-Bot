@@ -17,8 +17,8 @@ class Draw:
         x = int(x)
         y = int(y)
         height, width = image.shape[:2]
-        font_scale = max(1, width // 1000)
-        thickness = max(1, width // 800)
+        font_scale = max(1, height // 1000)
+        thickness = max(1, height // 800)
         text_size_x, text_size_y = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)[0]
         x -= text_size_x // 2
         y -= text_size_y // 2

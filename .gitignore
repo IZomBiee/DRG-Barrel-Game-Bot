@@ -1,5 +1,6 @@
 __pycache__
 .vscode
-.pt
 test_samples
 *.mp4
+*.onnx
+*.pt

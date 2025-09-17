@@ -19,33 +19,31 @@ class Predictor:
         self.right_border_x = 0
         self.border_tollirance = settings['border_tolirance']
         self.setup_position = settings['velocity_setup_position']
+        self.direction_detection_time = settings['direction_detection_time']
 
         self.avarage_velocity = [0., 0.]
 
-        self.left_border = False
-        self.right_border = False
+        self.previous_moving_direction = 'Right'
         print("Initialized Predictor")
 
-    def _update_border_state(self):
-        if self.left_border:
-            if not self.on_left_border(): 
-                self.left_border = False
-                self.clear()
-        elif self.on_left_border():
-            self.left_border = True
-
-        if self.right_border:
-            if not self.on_right_border(): 
-                self.right_border = False
-                self.clear()
-        elif self.on_right_border():
-            self.right_border = True
+    def _update_moving_direction(self):
+        if self.is_on_left_border():
+            changed_direction = self.previous_moving_direction == 'Left' and \
+            self.is_moving_right()
+            if changed_direction:
+                self.previous_moving_direction = 'Right'
+                self.on_direction_change()
+        elif self.is_on_right_border():
+            changed_direction = self.previous_moving_direction == 'Right' and \
+            not self.is_moving_right()
+            if changed_direction:
+                self.previous_moving_direction = 'Left'
+                self.on_direction_change()
 
     def _update_avarage_velocity(self) -> None:
         if len(self.boxes) >= 2:
             dt = self.times[-1]-self.times[0]
             if dt != 0:
-                # dx = ((self.boxes[-1][0]+self.boxes[-1][2])/2) - (self.boxes[0][0]+self.boxes[0][2])/2 
                 dx = self.boxes[-1][0] - self.boxes[0][0]
                 dy = self.boxes[-1][1] - self.boxes[0][1]
                 self.avarage_velocity = [dx / dt, dy / dt]
@@ -65,6 +63,27 @@ class Predictor:
             x0, y0, x1, y1 = box
             return ((x0+x1)/2, (y0+y1)/2)
 
+    def is_moving_right(self) -> bool:
+        if len(self.boxes) >= 2:
+            start_time = self.times[-1]  # latest time
+            index = len(self.times) - 2  # start from second last
+
+            # go backwards in time while still inside the detection window
+            while index >= 0 and start_time - self.times[index] < self.direction_detection_time:
+                index -= 1
+
+            # clamp index (make sure we don’t fall below 0)
+            if index < 0:
+                index = 0
+
+            # compare x positions (assuming boxes are (x, y, w, h) or similar)
+            delta_x = self.boxes[-1][0] - self.boxes[index][0]
+
+            # if delta_x is positive, object moved right
+            if delta_x > 0:
+                return True
+        return False
+
     def is_on_setup_position(self) -> bool:
         last_pos = self.get_last_center_position()
         if last_pos is None or self.get_setup_position()>last_pos[0]: 
@@ -82,31 +101,35 @@ class Predictor:
                 self.right_border_x = x
 
     def update(self, image:np.ndarray, time:float) -> None:
-        box = self.detector.find(image)
-        if box is None:
+        detections = self.detector.detect(image)
+        if len(detections) < 1:
             return
+        
+        detection = max(detections, key=lambda data: data['conf'])
+        box = detection['normalized_box']
 
         self.boxes.append(box)
         self.times.append(time)
+        self._update_moving_direction()
         self._update_avarage_velocity()
-        self._update_border_state()
 
-    def clear(self) -> None:
-        self.times = []
-        self.boxes = []
+    def on_direction_change(self) -> None:
+        if len(self.times) > 0:
+            self.times = [self.times[-1]]
+            self.boxes = [self.boxes[-1]]
         self.avarage_velocity = [0, 0]
 
     def get_setup_position(self) -> float:
         return self.left_border_x + (self.right_border_x - self.left_border_x) * self.setup_position
 
-    def on_left_border(self) -> bool:
+    def is_on_left_border(self) -> bool:
         pos = self.get_last_center_position()
         if pos is not None:
             if self.left_border_x+self.border_tollirance>pos[0]:
                 return True
         return False
     
-    def on_right_border(self) -> bool:
+    def is_on_right_border(self) -> bool:
         pos = self.get_last_center_position()
         if pos is not None:
             if self.right_border_x-self.border_tollirance<pos[0]:
@@ -147,8 +170,8 @@ class Predictor:
         self.detector.draw(image)        
 
         Draw.texts(image, width*last_position[0], height*last_box[3]*1.1, [
-            f'Right: {round(self.time_to_right_border(), 2)}',
-            f'Cycle: {round(self.cycle_time(), 2)}'
+            f'Right: {self.time_to_right_border():.2f}',
+            f'Cycle: {self.cycle_time():.2f}'
         ], (255, 255, 255))
 
         return image

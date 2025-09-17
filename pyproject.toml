@@ -1,36 +1,23 @@
-[project]
-name = "drg-barrel-game-bot"
-version = "0.11.1"
+[tool.poetry]
+name = "drg_barrel_game_bot"
+version = "0.12.0"
 description = ""
 authors = [
-    {name = "IZomBie",email = "patrik009009@gmail.com"}
+    "IZomBie <patrik009009@gmail.com>"
 ]
 readme = "README.md"
-requires-python = ">=3.13, <4.0.0"
-dependencies = [
-    "opencv-python (>=4.11.0.86,<5.0.0.0)",
-    "numpy (>=2.2.6,<3.0.0)",
-    "screeninfo (>=0.8.1,<0.9.0)",
-    "keyboard (>=0.13.5,<0.14.0)",
-    "toml (>=0.10.2,<0.11.0)",
-    "ultralytics (>=8.3.152,<9.0.0)",
-    "torch (>=2.7.1,<3.0.0)",
-    "torchvision (>=0.22.1,<0.23.0)",
-    "torchaudio (>=2.7.1,<3.0.0)",
-    "pygetwindow (>=0.0.9,<0.0.10)",
-    "mss (>=10.0.0,<11.0.0)",
-]
+
+[tool.poetry.dependencies]
+python = ">3.9, <4.0.0"
+opencv-python = ">=4.11.0.86,<5.0.0.0"
+numpy = "*"
+screeninfo = ">=0.8.1,<0.9.0"
+keyboard = ">=0.13.5,<0.14.0"
+toml = ">=0.10.2,<0.11.0"
+pygetwindow = ">=0.0.9,<0.0.10"
+mss = ">=10.0.0,<11.0.0"
+yolov8-onnx = "^1.0.4"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[[tool.poetry.source]]
-name = "pytorch-cu128"
-url = "https://download.pytorch.org/whl/cu128"
-priority = "supplemental"
-
-[tool.poetry.dependencies] 
-torch = {source = "pytorch-cu128"} 
-torchvision = {source = "pytorch-cu128"}
-torchaudio = {source = "pytorch-cu128"}

@@ -8,7 +8,6 @@ from collections import deque
 from drg_barrel_game_bot import Detector, \
 WindowRecorder, SL, KickManager, StateManager, Predictor
 from drg_barrel_game_bot.utils import Resize
-
 if torch.cuda.is_available():
     print("CUDA detected, GPU acceleration will be used.")
 else: print("No CUDA detected, using cpu!")
@@ -33,14 +32,15 @@ while True:
     loop_start_time = time.perf_counter()
     frame = cam.get_frame()
     if frame is None or not cam.is_updated():continue
-    
+
     fps_len = len(fps_list)
     if fps_len == 0:
         avg_fps = 0
     else:
-        avg_fps = round(sum(fps_list)/fps_len)
+        avg_fps = sum(fps_list)//fps_len
 
     predictor.update(frame, time.perf_counter())
+
     kick_manager.update(frame)
     match state_manager.state:
         case "On Startup":
@@ -60,15 +60,8 @@ while True:
             if state_manager.state_duration() > SL()['basket_predictor']['border_setup_time']:
                 state_manager.state = 'Waiting For Left Border'
         case 'Waiting For Left Border':
-            if predictor.on_left_border():
-                state_manager.state = 'On Left Border'
-        case 'On Left Border':
-            on_left_border_time = time.perf_counter()
-            if not predictor.on_left_border():
+            if predictor.is_moving_right() and predictor.is_on_left_border():
                 state_manager.state = 'Calculating Kick Time'
-            elif state_manager.state_duration() > 0.5:
-                print("On Left Border too long!")
-                state_manager.state = 'Waiting For Left Border'
         case 'Calculating Kick Time':
             if not predictor.is_on_setup_position():
                 delay = predictor.time_to_right_border()+predictor.cycle_time()/2
@@ -97,7 +90,9 @@ while True:
         frame = Draw.texts(
             frame, 180, frame.shape[0], [
                 f'FPS: {avg_fps}',
-                f'State: {state_manager.state}'
+                f'State: {state_manager.state}',
+                f'Moving: {"Right" if predictor.is_moving_right() else "Left"}',
+                f'On Left Border: {predictor.is_on_left_border()}'
             ], (255, 255, 255), -1
         )
         

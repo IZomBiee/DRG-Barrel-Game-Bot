@@ -53,7 +53,7 @@ class TestIntegration(unittest.TestCase):
             predictor = Predictor(detector)
             for frame in range(frame_count):
                 predictor.update_borders(cap.read()[1])
-            predictor.clear()
+            predictor.on_direction_change()
 
             cap = cv2.VideoCapture(path)
             for i in range(frame_count):

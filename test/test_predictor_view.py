@@ -23,7 +23,7 @@ for i in range(int(5/dt)):
     predictor.update_borders(frame)
     print("\033[A                             \033[A")
 
-predictor.clear()
+predictor.on_direction_change()
 
 processed_frame_buffer = []
 position_buffer = []

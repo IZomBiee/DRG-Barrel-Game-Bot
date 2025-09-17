@@ -1,26 +1,27 @@
 [detectors.ai]
-model_path = "D:\\Projects\\Python\\Yolo-Model-Training\\runs\\detect\\DRG-Hole-Dataset3\\weights\\best.pt" 
+model_path = "./assets/best.onnx" 
 
-score_threshold = 0.3
-iou_threshold = 0.3
-model_size = 320
+score_threshold = 0.2
+iou_threshold = 0.2
+model_size = 160
 
 [kick_manager]
-template_path = "assets/e_button_1920x1080.png"
+template_path = "assets/kick_label_2160x1440.png"
 template_detection_sensitivity = 0.4
-barrel_bouncing_time = 0.3
+barrel_bouncing_time = 0.5
 
 [basket_predictor]
-border_tolirance = 0.05
+border_tolirance = 0.1
+direction_detection_time = 0.1
 border_setup_time = 5
-barrel_fly_time = 2.1
-velocity_setup_position = 0.3
-max_time = 5
+barrel_fly_time = 2.35
+velocity_setup_position = 0.25
+max_time = 4.5
 
 [display]
-basket_y_gap = 0.6 # Bigger - Faster
+basket_y_gap = 0.7 # Bigger - Faster
 debug_view = true
-debug_video = true
+debug_video = false
 debug_view_scalling = 1
 
 [program]
